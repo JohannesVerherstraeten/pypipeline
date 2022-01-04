@@ -29,8 +29,8 @@ if TYPE_CHECKING:
 
 class InvalidTopologyException(Exception):
     """
-    Raised if a Topology is created with a cell ordering that could be valid, but doesn't match with the users
-    recurrency markings.
+    Raised if a Topology is created with a cell ordering that could be valid, but doesn't match with the user's
+    explicit recurrency markings.
     """
     pass
 
@@ -42,7 +42,7 @@ class Topology(object):
 
     A topology is fully determined by the ordering in which the internal cells must be executed.
 
-    Note that multiple valid equivalent topologies can exist for a composite cell. Ex:
+    Note that multiple valid equivalent topologies can exist for a composite cell's internal cells. Ex:
           -> c2 -
         /        \
     c1 -           -> c4
@@ -52,6 +52,7 @@ class Topology(object):
     computations and result.
      - c1, c2, c3, c4
      - c1, c3, c2, c4
+    Equivalence of topologies can be checked with `topology1.is_equivalent_with(topology2)`.
     """
 
     def __init__(self, parent_cell: "ICompositeCell", ordered_cells: List["ICell"]):
@@ -279,6 +280,21 @@ class Topology(object):
 
 
 def select_a_topology(cell: "ICompositeCell") -> Topology:
+    """
+    Searches for all possible topologies of the given cell, and selects one of them if they're all equivalent.
+
+    If no topology or multiple non-equivalent topologies are possible, an IndeterminableTopologyException
+    is raised.
+
+    Args:
+        cell: the composite cell to select a topology for.
+    Returns:
+        The selected topology.
+    Raises:
+        IndeterminableTopologyException: if no topology is possible or multiple non-equivalent topologies are possible,
+        an IndeterminableTopologyException is raised.
+
+    """
     all_topologies = find_all_topologies(cell)
 
     # Check whether there is a topological ordering of the internal cells possible.
@@ -312,11 +328,20 @@ def select_a_topology(cell: "ICompositeCell") -> Topology:
 
 
 def find_all_topologies(cell: "ICompositeCell") -> List[Topology]:
+    """
+    Searches for all possible topologies of the given cell.
+
+    Args:
+        cell: the composite cell to find all possible topologies for.
+    Returns:
+        All possible topologies for the given composite cell.
+    """
     result: List["Topology"] = []
     for ordering in _find_all_topological_orders(cell):
         try:
             topology = Topology(cell, ordering)
         except InvalidTopologyException:
+            # Invalid topology when taking the explicit recurrency markings of the user into account.
             continue
         else:
             result.append(topology)
@@ -328,6 +353,10 @@ def _find_all_topological_orders(cell: "ICompositeCell",
                                  discovered: Iterable[ICell] = (),
                                  hidden_connections: Optional[Set["IConnection"]] = None) -> List[List[ICell]]:
     """
+    Searches for all possible topological orderings of the composite cell's internal cells.
+
+    Note that this function doesn't take the explicit recurrency markings of the user into account.
+
     Implements Kahn's algorithm.
     Based on https://www.techiedelight.com/find-all-possible-topological-orderings-of-dag/
 

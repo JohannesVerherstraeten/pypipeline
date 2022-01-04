@@ -86,10 +86,6 @@ class ACompositeCell(ACell, ICompositeCell):
     # ------ IO ------
 
     def get_inputs_recursively(self) -> Sequence["IInput"]:
-        """
-        Returns:
-            All inputs of this cell, and those of its internal cells.
-        """
         result: List["IInput"] = []
         result.extend(self.get_inputs())
         for cell in self.get_internal_cells():
@@ -97,19 +93,6 @@ class ACompositeCell(ACell, ICompositeCell):
         return result
 
     def get_input_recursively(self, full_name: str) -> "IInput":
-        """
-        Get the input with the given full name.
-
-        If the input belongs to this cell, it should be just the ordinary input name.
-        If the input belongs to an internal cell, the full name should be relative to this cell.
-
-        Args:
-            full_name: the full name of the input to get.
-        Returns:
-            The input of this cell, or one of the internal cells, with the given full name.
-        Raises:
-            KeyError: this cell and its internal cells have no input with the given name.
-        """
         if "." not in full_name:
             return self.get_input(full_name)
         cell_name, io_name = full_name.split(".", maxsplit=1)
@@ -117,10 +100,6 @@ class ACompositeCell(ACell, ICompositeCell):
         return cell.get_input_recursively(io_name)
 
     def get_outputs_recursively(self) -> Sequence["IOutput"]:
-        """
-        Returns:
-            All outputs of this cell, and those of its internal cells.
-        """
         result: List["IOutput"] = []
         result.extend(self.get_outputs())
         for cell in self.get_internal_cells():
@@ -128,19 +107,6 @@ class ACompositeCell(ACell, ICompositeCell):
         return result
 
     def get_output_recursively(self, full_name: str) -> "IOutput":
-        """
-        Get the output with the given full name.
-
-        If the output belongs to this cell, it should be just the ordinary output name.
-        If the output belongs to an internal cell, the full name should be relative to this cell.
-
-        Args:
-            full_name: the full name of the output to get.
-        Returns:
-            The output of this cell, or one of the internal cells, with the given full name.
-        Raises:
-            KeyError: this cell and its internal cells have no output with the given name.
-        """
         if "." not in full_name:
             return self.get_output(full_name)
         cell_name, io_name = full_name.split(".", maxsplit=1)
@@ -148,25 +114,11 @@ class ACompositeCell(ACell, ICompositeCell):
         return cell.get_output_recursively(io_name)
 
     def _add_io(self, io: "IO") -> None:
-        """
-        Auxiliary mutator in the IO-ICell relation, as owner of the IO.
-        -> Should only be used by IO instances in their __init__.
-
-        Args:
-            io: the IO (input/output) to add to this cell.
-        Raises:
-            AlreadyDeployedException: if the cell is already deployed.
-            InvalidInputException
-        """
         if io.get_name() in self.get_internal_cell_names():
             raise InvalidInputException(f"{self} already has a cell with name {io.get_name()}")
         super(ACompositeCell, self)._add_io(io)
 
     def assert_has_proper_io(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if one of this cell's IO is invalid.
-        """
         super(ACompositeCell, self).assert_has_proper_io()
         internal_cell_names = self.get_internal_cell_names()
         for io in self.get_all_io():
@@ -177,12 +129,6 @@ class ACompositeCell(ACell, ICompositeCell):
     # ------ Internal cells (A composite cell can be an observer of its internal cells)------
 
     def has_as_observable(self, observable: "IObservable") -> bool:
-        """
-        Args:
-            observable: an observable object.
-        Returns:
-            True if this observer is observing the given observable.
-        """
         if not self._wants_to_observe_its_internal_cells():
             return False
         if not isinstance(observable, pypipeline.cell.ICell):
@@ -190,29 +136,13 @@ class ACompositeCell(ACell, ICompositeCell):
         return self.has_as_internal_cell(observable)
 
     def update(self, event: "Event") -> None:
-        """
-        Will be called by the observables of this observer (ex: internal cell).
-
-        Args:
-            event: the event to notify this observer about.
-
-        # TODO may raise exceptions
-        """
         # Called when the state of an internal cell changes.
         self.notify_observers(event)
 
     def get_internal_cells(self) -> "Sequence[ICell]":
-        """
-        Returns:
-            The internal cells of this composite cell (non-recursively).
-        """
         return tuple(self.__internal_cells.values())
 
     def get_internal_cells_recursively(self) -> Sequence["ICell"]:
-        """
-        Returns:
-            The internal cells of this composite cell recursively.
-        """
         result = []
         for cell in self.get_internal_cells():
             result.append(cell)
@@ -221,36 +151,12 @@ class ACompositeCell(ACell, ICompositeCell):
         return result
 
     def get_internal_cell_names(self) -> Sequence[str]:
-        """
-        Returns:
-            The names of the internal cells of this composite cell (non-recursively).
-        """
         return tuple(self.__internal_cells.keys())
 
     def get_internal_cell_with_name(self, name: str) -> "ICell":
-        """
-        Args:
-            name: the name of an internal cell.
-        Returns:
-            The internal cell with the given name.
-        Raises:
-            KeyError: if no internal cell with the given name exists.
-        """
         return self.__internal_cells[name]
 
     def _add_internal_cell(self, cell: "ICell") -> None:
-        """
-        Should only be used by ICell instances in their __init__.
-
-        Main mutator in the ICompositeCell-ICell relation, as parent of internal cells.
-        Main mutator in the IObserver-IObservable relation as potential observer of internal cells.
-
-        Args:
-            cell: the internal cell to add to this composite cell.
-        Raises:
-            AlreadyDeployedException: if the cell is already deployed.
-            InvalidInputException
-        """
         self._clear_internal_topology()     # May raise AlreadyDeployedException
         raise_if_not(self.can_have_as_internal_cell(cell), InvalidInputException)
         raise_if_not(self.can_have_as_nb_internal_cells(self.get_nb_internal_cells() + 1), InvalidInputException)
@@ -274,18 +180,6 @@ class ACompositeCell(ACell, ICompositeCell):
         self.__internal_cells[cell.get_name()] = cell
 
     def _remove_internal_cell(self, cell: "ICell") -> None:
-        """
-        Should only be used by ICell instances in their delete().
-
-        Main mutator in the ICompositeCell-ICell relation, as parent of internal cells.
-        Main mutator in the IObserver-IObservable relation as potential observer of internal cells.
-
-        Args:
-            cell: the internal cell to remove from this composite cell.
-        Raises:
-            AlreadyDeployedException: if the cell is already deployed.
-            InvalidInputException
-        """
         self._clear_internal_topology()     # May raise AlreadyDeployedException
         if not self.has_as_internal_cell(cell):
             raise InvalidInputException(f"{self} doesn't have {cell} as an internal cell.")
@@ -302,68 +196,30 @@ class ACompositeCell(ACell, ICompositeCell):
         del self.__internal_cells[cell.get_name()]
 
     def can_have_as_internal_cell(self, cell: "ICell") -> BoolExplained:
-        """
-        Args:
-            cell: internal cell to validate.
-        Returns:
-            TrueExplained if the given cell is a valid internal cell for this composite cell. FalseExplained otherwise.
-        """
         # Can I have the cell as internal cell and observable?
         if not isinstance(cell, pypipeline.cell.icell.ICell):
             return FalseExplained(f"{self}: internal cell should be of type ICell, got {type(cell)}. ")
         return TrueExplained()
 
     def get_nb_internal_cells(self) -> int:
-        """
-        Returns:
-            The number of internal cells inside this composite cell (non-recursively).
-        """
         return len(self.__internal_cells)
 
     def get_max_nb_internal_cells(self) -> int:
-        """
-        Returns:
-            The maximum amount of internal cells that can be nested inside this composite cell.
-        """
         return self.__max_nb_internal_cells
 
     def can_have_as_nb_internal_cells(self, number_of_internal_cells: int) -> BoolExplained:
-        """
-        Main validator in the ICompositeCell-ICell relation, as parent of internal cells.
-
-        Args:
-            number_of_internal_cells: the number to validate.
-        Returns:
-            TrueExplained if the given number of internal cells is allowed. FalseExplained otherwise.
-        """
         max_nb = self.get_max_nb_internal_cells()
         if not 0 <= number_of_internal_cells <= max_nb:
             return FalseExplained(f"{self}: the number of internal cells should be in range 0..{max_nb} (inclusive)")
         return TrueExplained()
 
     def has_as_internal_cell(self, cell: "ICell") -> bool:
-        """
-        Args:
-            cell: a cell object
-        Returns:
-            True if the given cell is an internal cell of this composite cell. False otherwise.
-        """
         return cell in self.__internal_cells.values()
 
     def has_as_internal_cell_name(self, name: str) -> bool:
-        """
-        Args:
-            name: a cell name
-        Returns:
-            True if this composite cell has an internal cell with the given name. False otherwise.
-        """
         return name in self.__internal_cells
 
     def assert_has_proper_internal_cells(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if one or more of the internal cells is invalid.
-        """
         raise_if_not(self.can_have_as_nb_internal_cells(self.get_nb_internal_cells()), InvalidStateException)
 
         internal_cells = self.get_internal_cells()
@@ -398,18 +254,6 @@ class ACompositeCell(ACell, ICompositeCell):
     # ------ Internal connections ------
 
     def _add_internal_connection(self, connection: "IConnection") -> None:
-        """
-        Should only be used by IConnection instances in their __init__.
-
-        Auxiliary mutator in the IConnection-ICompositeCell relation, as the parent cell of the connection.
-
-
-        Args:
-            connection: the internal connection to add.
-        Raises:
-            AlreadyDeployedException: if this cell is already deployed
-            InvalidInputException
-        """
         self._clear_internal_topology()
         raise_if_not(self.can_have_as_internal_connection(connection), InvalidInputException)
         if self.has_as_internal_connection(connection):
@@ -417,54 +261,23 @@ class ACompositeCell(ACell, ICompositeCell):
         self.__internal_connections.append(connection)
 
     def _remove_internal_connection(self, connection: "IConnection") -> None:
-        """
-        Should only be used by IConnection instances in their delete().
-
-        Auxiliary mutator in the IConnection-ICompositeCell relation, as the parent cell of the connection.
-
-        Args:
-            connection: the internal connection to remove.
-        Raises:
-            AlreadyDeployedException: if this cell is already deployed
-            InvalidInputException
-        """
         self._clear_internal_topology()
         if not self.has_as_internal_connection(connection):
             raise InvalidInputException(f"{self} doesn't have a connection {connection}")
         self.__internal_connections.remove(connection)
 
     def can_have_as_internal_connection(self, connection: "IConnection") -> BoolExplained:
-        """
-        Args:
-            connection: connection to validate
-        Returns:
-            TrueExplained if this connection is a valid internal connection, FalseExplained otherwise.
-        """
         if not isinstance(connection, pypipeline.connection.connection.IConnection):
             return FalseExplained(f"{self}: internal connection should be of type IConnection, got {type(connection)}.")
         return TrueExplained()
 
     def get_internal_connections(self) -> "Sequence[IConnection]":
-        """
-        Returns:
-            The internal connections of this composite cell (non-recursively).
-        """
         return tuple(self.__internal_connections)
 
     def has_as_internal_connection(self, connection: "IConnection") -> bool:
-        """
-        Args:
-            connection: a connection object.
-        Returns:
-            True if this composite cell has the given connection as an internal connection, False otherwise.
-        """
         return connection in self.__internal_connections
 
     def assert_has_proper_internal_connections(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if one or more of the internal connections are invalid.
-        """
         for connection in self.get_internal_connections():
             raise_if_not(self.can_have_as_internal_connection(connection), InvalidStateException)
             if connection.get_parent_cell() != self:
@@ -475,10 +288,6 @@ class ACompositeCell(ACell, ICompositeCell):
     # ------ Deployment ------
 
     def is_deployable(self) -> "BoolExplained":
-        """
-        Returns:
-            TrueExplained if all preconditions for deployment are met. FalseExplained otherwise.
-        """
         if not self._internal_topology_is_set():
             try:
                 self._set_internal_topology()
@@ -492,33 +301,12 @@ class ACompositeCell(ACell, ICompositeCell):
         return result
 
     def inputs_are_provided(self) -> "BoolExplained":
-        """
-        Returns:
-            TrueExplained if all inputs of this cell are provided (they have an incoming connection, a default,
-            value, ...)
-        """
         result: BoolExplained = super(ACompositeCell, self).inputs_are_provided()
         for cell in self.get_internal_cells():
             result *= cell.inputs_are_provided()
         return result
 
     def _on_deploy(self) -> None:
-        """
-        Override this method to add functionality that must happen when deploying the cell.
-
-        Don't forget to call the _on_deploy of the super-class when overriding this method! Ex:
-        ```
-        def _on_deploy(self) -> None:
-            super(MyCell, self)._on_deploy()
-            # other deployment code
-        ```
-
-        Raises:
-            AlreadyDeployedException: if called when an internal cell is already deployed.
-            IndeterminableTopologyException: if the internal topology could not be determined.
-                Cannot happen in deploy(), as the is_deployable() method covers this case already.
-            Exception: any exception that the user may raise when overriding _on_deploy or _on_undeploy.
-        """
         if not self._internal_topology_is_set():
             self._set_internal_topology()
         super(ACompositeCell, self)._on_deploy()
@@ -532,20 +320,6 @@ class ACompositeCell(ACell, ICompositeCell):
             raise e
 
     def _on_undeploy(self) -> None:
-        """
-        Override this method to add functionality that must happen when undeploying the cell.
-
-        Don't forget to call the _on_undeploy of the super-class when overriding this method! Ex:
-        ```
-        def _on_undeploy(self) -> None:
-            super(MyCell, self)._on_undeploy()
-            # other undeployment code
-        ```
-
-        Raises:
-            NotDeployedException: if called when an internal cell is not deployed.
-            Exception: any exception that the user may raise when overriding _on_undeploy.
-        """
         super(ACompositeCell, self)._on_undeploy()
         for cell in reversed(self.get_internal_cells_in_topological_order()):
             cell.undeploy()
@@ -553,12 +327,6 @@ class ACompositeCell(ACell, ICompositeCell):
     # ------ State synchronization between a cell and its clones ------
 
     def _get_sync_state(self) -> Dict[str, Any]:
-        """
-        Used for synchronizing the state of clone cells with that of their corresponding original one.
-
-        Returns:
-            A (nested) dictionary, containing the state of this cell.
-        """
         with self._get_pull_lock():
             state = super(ACompositeCell, self)._get_sync_state()
 
@@ -583,14 +351,6 @@ class ACompositeCell(ACell, ICompositeCell):
         return state
 
     def _set_sync_state(self, state: Dict) -> None:     # TODO cleanup
-        """
-        Used for synchronizing the state of clone cells with that of their corresponding original one.
-
-        Args:
-            state: a (nested) dictionary, containing the new state of this cell.
-        Raises:
-            KeyError: when the state dictionary contains the name of a cell or IO that is not available in this cell.
-        """
         with self._get_pull_lock():
             super(ACompositeCell, self)._set_sync_state(state)
 
@@ -634,13 +394,6 @@ class ACompositeCell(ACell, ICompositeCell):
                 cell._set_sync_state(internal_cells_state[cell.get_name()])
 
     def supports_scaling(self) -> bool:
-        """
-        A cell support scaling if it supports multiple clones of it running in parallel. This should usually be False
-        for stateful cells.
-
-        Returns:
-            True if this cell supports scaling. False otherwise.
-        """
         support_scaling = True
         for cell in self.get_internal_cells():
             if not cell.supports_scaling():
@@ -651,25 +404,12 @@ class ACompositeCell(ACell, ICompositeCell):
     # ------ Topology ------
 
     def get_internal_topology(self) -> "Topology":
-        """
-        Returns:
-            The internal topology of this composite cell: which of the internal cells are sources and/or sinks,
-            and which internal connections are recurrent or not?
-        Raises:
-            IndeterminableTopologyException: if the internal topology could not be determined.
-        """
         if not self._internal_topology_is_set():
             self._set_internal_topology()
         assert self.__internal_topology is not None
         return self.__internal_topology
 
     def can_have_as_internal_topology(self, topology: Optional["Topology"]) -> BoolExplained:
-        """
-        Args:
-            topology: the topology to validate.
-        Returns:
-            TrueExplained if the given topology is a valid topology for this composite cell.
-        """
         if topology is None:
             return TrueExplained()
         if not isinstance(topology, Topology):
@@ -677,13 +417,6 @@ class ACompositeCell(ACell, ICompositeCell):
         return TrueExplained()
 
     def _set_internal_topology(self) -> None:
-        """
-        Sets the internal topology of this cell. See cell.get_internal_topology.
-
-        Raises:
-            AlreadyDeployedException: if called when the cell is already deployed.
-            IndeterminableTopologyException: if the internal topology could not be determined.
-        """
         if self.is_deployed():
             raise AlreadyDeployedException(f"Cannot (re)set the internal topology of {self} when it is deployed.")
         self.__internal_topology = select_a_topology(self)
@@ -692,12 +425,6 @@ class ACompositeCell(ACell, ICompositeCell):
                 cell._set_internal_topology()
 
     def _clear_internal_topology(self) -> None:
-        """
-        Clears the internal topology of this cell. See cell.get_internal_topology.
-
-        Raises:
-            AlreadyDeployedException: if called when the cell is already deployed.
-        """
         if self.is_deployed():
             raise AlreadyDeployedException(f"Cannot (re)set the internal topology of {self} when it is deployed.")
         if self.__internal_topology is not None:
@@ -708,10 +435,6 @@ class ACompositeCell(ACell, ICompositeCell):
                 cell._clear_internal_topology()
 
     def _internal_topology_is_set(self) -> bool:
-        """
-        Returns:
-            True if the internal topology is set, False otherwise.
-        """
         if self.__internal_topology is None:
             return False
         for cell in self.get_internal_cells():
@@ -720,10 +443,6 @@ class ACompositeCell(ACell, ICompositeCell):
         return True
 
     def assert_has_proper_internal_topology(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if the internal topology is not valid.
-        """
         if not self._internal_topology_is_set():
             return
         topology = self.get_internal_topology()
@@ -733,136 +452,43 @@ class ACompositeCell(ACell, ICompositeCell):
         topology.assert_is_valid()
 
     def get_topology_description(self) -> Dict[str, Any]:
-        """
-        Returns:
-            A dictionary (json format), fully describing the topological properties if this cell.
-        Raises:
-            IndeterminableTopologyException: if the topology of this cell w.r.t. the surrounding cells could not be
-                determined.
-        """
         description = super(ACompositeCell, self).get_topology_description()
         description["internal_cells_topologically_ordered"] = [cell.get_topology_description() for cell in self.get_internal_cells_in_topological_order()]
         description["internal_connections"] = [connection.get_topology_description() for connection in self.get_internal_connections()]
         return description
 
     def _has_as_internal_recurrent_connection(self, internal_connection: "IConnection") -> bool:
-        """
-        Should only be used by IConnection objects, see connection.is_recurrent()
-
-        Args:
-            internal_connection: a connection object.
-        Returns:
-            True if the given internal connection is recurrent in the current topology, False otherwise.
-        Raises:
-            IndeterminableTopologyException: if the internal topology could not be determined.
-            AssertionError: if the connection is not an internal connection of this composite cell.
-        """
         topology = self.get_internal_topology()
         return topology.has_as_recurrent_connection(internal_connection)
 
     def _has_as_internal_source_cell(self, internal_cell: "ICell") -> bool:
-        """
-        Should only be used by ICell objects: see cell.is_source_cell()
-
-        Args:
-            internal_cell: a cell object.
-        Returns:
-            True if the given internal cell is a source cell in the current topology, False otherwise.
-        Raises:
-            IndeterminableTopologyException: if the internal topology could not be determined.
-            AssertionError: if the cell is not an internal cell of this composite cell.
-        """
         topology = self.get_internal_topology()
         return topology.has_as_source_cell(internal_cell)
 
     def _has_as_internal_sink_cell(self, internal_cell: "ICell") -> bool:
-        """
-        Should only be used by ICell objects: see cell.is_sink_cell()
-
-        Args:
-            internal_cell: a cell object.
-        Returns:
-            True if the given internal cell is a sink cell in the current topology, False otherwise.
-        Raises:
-            IndeterminableTopologyException: if the internal topology could not be determined.
-            AssertionError: if the cell is not an internal cell of this composite cell.
-        """
         topology = self.get_internal_topology()
         return topology.has_as_sink_cell(internal_cell)
 
     def get_internal_cells_in_topological_order(self) -> "Sequence[ICell]":
-        """
-        The topological ordering represents an ordering in which the cells can be executed.
-
-        If cell_a has an outgoing connection to an input of cell_b, cell_a will occur before cell_b in the
-        topological order.
-
-        Returns:
-            The internal cells of this composite cell in topological order.
-        Raises:
-            IndeterminableTopologyException: if the internal topology could not be determined.
-        """
         topology = self.get_internal_topology()
         return tuple(topology.get_ordered_cells())
 
     # ------ Pulling ------
 
     def _on_pull(self) -> None:
-        """
-        Override this method to add functionality that must happen when pulling the cell.
-
-        During a pull, a cell must pull its inputs, execute it's functionality and set its outputs.
-
-        Raises:
-            Exception: any exception that the user may raise when overriding _on_pull.
-
-        Won't raise:
-            NotDeployedException: this method will only be called when the cell is already deployed.
-            IndeterminableTopologyException: this method will only be called when the cell is already deployed.
-        """
         raise NotImplementedError
 
     def _on_reset(self) -> None:
-        """
-        Override this method to add functionality that must happen when resetting the cell.
-
-        During a reset, a cell must clear its internal state. This doesn't include cell configuration, but only
-        cell state that was accumulated during consecutive pulls.
-        Ex: reset the dataloader iterator of a dataloader cell.
-        Ex: the currently accumulated batch in a BatchingCell.
-
-        Don't forget to call the _on_reset of the super-class when overriding this method! Ex:
-        ```
-        def _on_reset(self) -> None:
-            super(MyCell, self)._on_reset()
-            # other resetting code
-        ```
-
-        Raises:
-            Exception: any exception that the user may raise when overriding _on_reset.
-        """
         super(ACompositeCell, self)._on_reset()
         for internal_cell in self.get_internal_cells():
             internal_cell.reset()
 
     def get_nb_required_gpus(self) -> float:
-        """
-        Override this method to indicate how much GPUs your cell needs.
-
-        Note: very experimental feature - might not yet work at all.
-
-        Returns:
-            The number of GPUs this cell needs. Can be a fraction.
-        """
         return sum([internal_cell.get_nb_required_gpus() for internal_cell in self.get_internal_cells()])
 
     # ------ General validation ------
 
     def assert_is_valid(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if one of the attributes or relations of this cell is invalid.
-        """
         super(ACompositeCell, self).assert_is_valid()
         self.assert_has_proper_internal_cells()
         self.assert_has_proper_internal_connections()
@@ -871,12 +497,6 @@ class ACompositeCell(ACell, ICompositeCell):
     # ------ Deletion ------
 
     def delete(self) -> None:
-        """
-        Deletes this cell, and all its internals.
-
-        Raises:
-            CannotBeDeletedException
-        """
         raise_if_not(self.can_be_deleted(), CannotBeDeletedException)
         self._clear_internal_topology()
         for internal_connection in self.get_internal_connections():

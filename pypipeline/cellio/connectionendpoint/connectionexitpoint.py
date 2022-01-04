@@ -40,6 +40,11 @@ class ConnectionExitPoint(Generic[T]):
     PULL_TIMEOUT: float = 5.0
 
     def __init__(self, io: "IConnectionExitPoint[T]", max_outgoing_connections: int = 99999):
+        """
+        Args:
+            io: the IO on which to create this connection exit point.
+            max_outgoing_connections: the max number of outgoing connections that is allowed.
+        """
         self.logger = logging.getLogger(self.__class__.__name__)
         self.__io = io
         self.__max_outgoing_connections = max_outgoing_connections
@@ -47,6 +52,10 @@ class ConnectionExitPoint(Generic[T]):
         self._pull_lock = Condition(RLock())
 
     def get_io(self) -> "IConnectionExitPoint[T]":
+        """
+        Returns:
+            The IO to which this connection entry point belongs.
+        """
         return self.__io
 
     def pull_as_connection(self, connection: "IConnection[T]") -> T:
@@ -59,6 +68,9 @@ class ConnectionExitPoint(Generic[T]):
 
         Note: calling this method may block forever when a connection pulls twice before all other connections have
         pulled.
+
+        Args:
+            connection: the outgoing connection that wants to pull this connection exit point.
         """
         self.logger.debug(f"{self}.pull_as_connection() @ ConnectionExitPoint")
 
@@ -109,6 +121,11 @@ class ConnectionExitPoint(Generic[T]):
         return result
 
     def have_all_outgoing_connections_pulled(self) -> bool:
+        """
+        Returns:
+            True if all outgoing connections have pulled this connection exit point. Used to determine whether the IO
+                must wait for or request a new value.
+        """
         all_have_pulled = True
         # self.logger.debug(f"{self} outgoing connections: {list(self.get_outgoing_connections())}")
         for outgoing_connection in self.get_outgoing_connections():
@@ -121,13 +138,28 @@ class ConnectionExitPoint(Generic[T]):
         return all_have_pulled
 
     def _notify_new_value(self) -> None:
+        """
+        Notifies this connection exit point that a new value is available.
+        """
         self._reset_has_seen_value()
 
     def has_seen_value(self, connection: "IConnection[T]") -> bool:
+        """
+        Args:
+            connection: an outgoing connection of this connection exit point.
+        Returns:
+            True if the given connection has already seen the current value.
+        """
         assert self.has_as_outgoing_connection(connection)
         return self.__has_seen_value[connection]
 
     def _set_has_seen_value(self, connection: "IConnection[T]") -> None:
+        """
+        Notifies this connection exit point that the given connection has seen the current value.
+
+        Args:
+            connection: an outgoing connection of this connection exit point.
+        """
         assert self.has_as_outgoing_connection(connection)
         self.__has_seen_value[connection] = True
         if self.have_all_outgoing_connections_pulled():
@@ -139,6 +171,9 @@ class ConnectionExitPoint(Generic[T]):
         self.get_io().get_cell()._notify_connection_has_pulled()    # access to protected member on purpose
 
     def _reset_has_seen_value(self) -> None:
+        """
+        Clears the has_seen_value flag for every outgoing connection of this connection exit point.
+        """
         for connection in self.get_outgoing_connections():
             self.__has_seen_value[connection] = False
 
@@ -208,21 +243,47 @@ class ConnectionExitPoint(Generic[T]):
         del self.__has_seen_value[connection]
 
     def get_max_nb_outgoing_connections(self) -> int:
+        """
+        Returns:
+            The max number of outgoing connections this connection exit point is allowed to have.
+        """
         return self.__max_outgoing_connections
 
     def get_nb_outgoing_connections(self) -> int:
+        """
+        Returns:
+            The number of outgoing connections of this connection exit point.
+        """
         return len(self.__has_seen_value)
 
     def has_as_outgoing_connection(self, connection: "IConnection[T]") -> bool:
+        """
+        Returns:
+            True if the given connection is an outgoing connection of this connection exit point.
+        """
         return connection in self.__has_seen_value
 
     def has_outgoing_connection_to(self, target: "IConnectionEntryPoint[T]") -> bool:
+        """
+        Args:
+            target: a connection entry point.
+        Returns:
+            True if this connection exit point has an outgoing connection to the given target.
+        """
         for connection in self.get_outgoing_connections():
             if connection.get_target() == target:
                 return True
         return False
 
     def get_outgoing_connection_to(self, target: "IConnectionEntryPoint[T]") -> "IConnection[T]":
+        """
+        Args:
+            target: a connection entry point.
+        Returns:
+            The connection which starts at this IO and goes to the given target.
+        Raises:
+            ValueError: if no outgoing connection exists from this IO to the given target.
+        """
         for connection in self.get_outgoing_connections():
             if connection.get_target() == target:
                 return connection
@@ -243,9 +304,17 @@ class ConnectionExitPoint(Generic[T]):
                                             f"source")
 
     def has_initial_value(self) -> bool:
+        """
+        Returns:
+            True if this connection exit point has an initial value available.
+        """
         return False
 
     def assert_is_valid(self) -> None:
+        """
+        Raises:
+            InvalidStateException: if any of the relations/attributes of this connection exit point are invalid.
+        """
         self.assert_has_proper_outgoing_connections()
 
     def delete(self) -> None:

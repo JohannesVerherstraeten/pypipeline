@@ -4,15 +4,33 @@ from threading import Thread, Event, Lock
 from pypipeline.cell.compositecell.scalablecell.strategy.ascalingstrategy import AScalingStrategy
 from pypipeline.cell.compositecell.scalablecell.strategy.cloningstrategy.clonecell import ICloneCell
 from pypipeline.cell.compositecell.scalablecell.strategy.cloningstrategy.clonethread import CloneThread
-from pypipeline.exceptions import NoInternalCellException, InvalidStateException
+from pypipeline.exceptions import InvalidStateException, InvalidInputException
+from pypipeline.validation import BoolExplained, TrueExplained, FalseExplained, raise_if_not
 
 if TYPE_CHECKING:
     from pypipeline.cell.compositecell.scalablecell.scalablecelldeployment import ScalableCellDeployment
 
 
 class CloningStrategy(AScalingStrategy):
+    """
+    Cloning strategy class.
+
+    A scaling strategy determines how a scalable cell should be executed. ATM 2 strategies are implemented:
+     - the CloningStrategy (default): allows to scale up using clones of the internal cell
+     - the NoScalingStrategy: doesn't allow scaling and executes the scalable cell's internal cell in the mainthread,
+       just like a Pipeline. Useful for debugging.
+    """
 
     def __init__(self, scalable_cell_deployment: "ScalableCellDeployment"):
+        """
+        Args:
+            scalable_cell_deployment: the scalable cell deployment where this scaling strategy belongs to.
+        Raises:
+            NotDeployableException – if the internal cell cannot be deployed.
+            AlreadyDeployedException – if the internal cell is already deployed.
+            NotDeployableException – if the internal cell cannot be deployed.
+            Exception – any exception that the user may raise when overriding _on_deploy or _on_undeploy
+        """
         super(CloningStrategy, self).__init__(scalable_cell_deployment)
         self.__clones: Dict[ICloneCell, Thread] = {}
         self.__clones_are_active: Dict[ICloneCell, Event] = {}    # can be set by both thread manager and thread
@@ -26,19 +44,25 @@ class CloningStrategy(AScalingStrategy):
     def create(cls, scalable_cell_deployment: "ScalableCellDeployment") -> "CloningStrategy":
         return CloningStrategy(scalable_cell_deployment)
 
-    def get_queue_reservation_lock(self) -> Lock:
+    def __get_queue_reservation_lock(self) -> Lock:
+        """
+        Returns:
+            The lock which should be acquired while reserving a spot in the output queue and while pulling
+            the inputs. Makes sure no 2 clone threads can pull the inputs at the same time.
+        """
         return self.__queue_reservation_lock
 
     # ------ Clones ------
 
     def get_all_clones(self) -> Sequence[ICloneCell]:
+        """
+        Returns:
+            All clone cells that are created from the original cell.
+        """
         return tuple(self.__clones.keys())
 
-    def add_clone(self, method: Type[ICloneCell]) -> None:
+    def add_clone(self, method: Type[ICloneCell]) -> None:      # TODO create_clone would be a better name?
         internal_cell = self.get_internal_cell()
-        if internal_cell is None:
-            raise NoInternalCellException(f"{self.get_scalable_cell_deployment().get_scalable_cell()} "
-                                          f"has no internal cell that can be scaled up. ")
         scalable_cell_name = self.get_scalable_cell_deployment().get_scalable_cell().get_full_name()
         scalable_cell_name = str(scalable_cell_name).replace(".", "-")
         clone_name = f"{scalable_cell_name} - worker{self.__worker_id_counter}"
@@ -47,7 +71,7 @@ class CloningStrategy(AScalingStrategy):
         self.__add_clone(clone)
 
     def __add_clone(self, clone: ICloneCell) -> None:
-        assert self.__can_have_as_clone(clone)
+        raise_if_not(self.__can_have_as_clone(clone), InvalidInputException)
         check_quit_interval = self.get_scalable_cell_deployment().get_scalable_cell().config_check_quit_interval.pull()
         scalable_cell_name = self.get_scalable_cell_deployment().get_scalable_cell().get_full_name()
         scalable_cell_name = str(scalable_cell_name).replace(".", "-")
@@ -61,7 +85,7 @@ class CloningStrategy(AScalingStrategy):
                                    is_active_event,
                                    must_quit_event,
                                    has_paused_event,
-                                   self.get_queue_reservation_lock(),
+                                   self.__get_queue_reservation_lock(),
                                    self.get_scalable_cell_deployment().get_output_queue(),
                                    check_quit_interval,
                                    clone_worker_name)
@@ -87,7 +111,8 @@ class CloningStrategy(AScalingStrategy):
         self.__remove_clone(the_chosen_one)
 
     def __remove_clone(self, clone: ICloneCell) -> None:
-        assert self.__has_as_clone(clone)
+        if not self.__has_as_clone(clone):
+            raise InvalidInputException(f"{self} doesn't have {clone} as clone. ")
         self.logger.info(f"Deactivating clone worker thread {self.__clones[clone].getName()}")
         self.__clones_must_quit[clone].set()
         self.__clones_are_active[clone].set()     # Activate the thread such that it can quit
@@ -101,8 +126,10 @@ class CloningStrategy(AScalingStrategy):
         del self.__clones[clone]
         clone.delete()
 
-    def __can_have_as_clone(self, clone: ICloneCell) -> bool:
-        return isinstance(clone, ICloneCell)
+    def __can_have_as_clone(self, clone: ICloneCell) -> "BoolExplained":
+        if not isinstance(clone, ICloneCell):
+            return FalseExplained(f"{self} expected a clone to be an instance of ICloneCell, got {type(clone)}")
+        return TrueExplained()
 
     def __has_as_clone(self, clone: ICloneCell) -> bool:
         return clone in self.__clones.keys()
@@ -116,21 +143,25 @@ class CloningStrategy(AScalingStrategy):
             nb_clones_by_type[type(clone)] = nb_clones_by_type.get(type(clone), 0) + 1
         return nb_clones_by_type
 
-    def __has_proper_clones(self) -> bool:
+    def __assert_has_proper_clones(self) -> None:
         # the clones must be consistent with the configured clone types.
-        if self.get_nb_clones_by_type() != \
-                self.get_scalable_cell_deployment().get_scalable_cell().get_nb_clone_types_by_type():
-            return False
-        # can_have_as_clone must be true for all clones
-        for clone in self.get_all_clones():
-            if not self.__can_have_as_clone(clone):
-                return False
+        scalable_cell = self.get_scalable_cell_deployment().get_scalable_cell()
+        if self.get_nb_clones_by_type() != scalable_cell.get_nb_clone_types_by_type():
+            raise InvalidStateException(f"The clones of {self} don't correspond with the configured clone types "
+                                        f"of its scalable cell {scalable_cell}.")
 
         # the clones used as keys in these two dictionaries must be the same    # TODO extend
         if set(self.__clones.keys()) != set(self.__clones_are_active.keys()):
-            return False
+            raise InvalidStateException(f"{self}: internal dict keys don't match: {set(self.__clones.keys())} and "
+                                        f"{set(self.__clones_are_active.keys())}")
 
-        return True
+        # can_have_as_clone must be true for all clones
+        for clone in self.get_all_clones():
+            raise_if_not(self.__can_have_as_clone(clone), InvalidStateException)
+
+        # Also check the full validity of the clone clones
+        for clone in self.get_all_clones():
+            clone.assert_is_valid()
 
     # ------ Pulling ------
 
@@ -173,12 +204,8 @@ class CloningStrategy(AScalingStrategy):
     # ------ Validation ------
 
     def assert_is_valid(self) -> None:
-        if not self.__has_proper_clones():
-            raise InvalidStateException()   # TODO
-
-        # Also check the full validity of the clone clones
-        for clone in self.get_all_clones():
-            clone.assert_is_valid()
+        super(CloningStrategy, self).assert_is_valid()
+        self.__assert_has_proper_clones()
 
     # ------ Deletion ------
 

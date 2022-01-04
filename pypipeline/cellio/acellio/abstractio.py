@@ -44,6 +44,13 @@ class AbstractIO(IO[T], Generic[T]):
     """
 
     def __init__(self, cell: "ICell", name: str, validation_fn: Optional[Callable[[T], bool]] = None):
+        """
+        Args:
+            cell: the cell of which this IO will be part.
+            name: the name of this IO. Should be unique within the cell.
+            validation_fn: An optional validation function that will be used to validate every value that passes
+                through this IO.
+        """
         self.logger = logging.getLogger(self.__class__.__name__)
 
         raise_if_not(self.can_have_as_name(name), InvalidInputException)
@@ -69,12 +76,24 @@ class AbstractIO(IO[T], Generic[T]):
         self.get_cell().notify_observers(event)
 
     def _get_cell_pull_lock(self) -> "RLock":
+        """
+        Returns:
+            The pull lock which makes sure that the cell of this IO is not pulled concurrently.
+        """
         raise NotImplementedError
 
     def _get_state_lock(self):
+        """
+        Returns:
+            The lock which makes sure that this IO is not pulled concurrently.
+        """
         return self.__state_lock
 
     def _get_value_is_set_signal(self):
+        """
+        Returns:
+            A condition that gets signalled when a new value is available.
+        """
         return self.__value_is_set_signal
 
     def get_name(self) -> str:
@@ -100,21 +119,11 @@ class AbstractIO(IO[T], Generic[T]):
         return self.__cell
 
     def can_have_as_cell(self, cell: "ICell") -> BoolExplained:
-        """
-        Args:
-            cell: cell object to validate.
-        Returns:
-            TrueExplained if the given cell is a valid cell for this IO. FalseExplained otherwise.
-        """
         if not isinstance(cell, pypipeline.cell.icell.ICell):
             return FalseExplained(f"Cell should be instance of ICell, got {cell}")
         return TrueExplained()
 
     def assert_has_proper_cell(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if the cell of this IO is not valid.
-        """
         cell = self.get_cell()
         raise_if_not(self.can_have_as_cell(cell), InvalidStateException, f"{self} has invalid cell: ")
         if not cell.has_as_io(self):
@@ -135,6 +144,11 @@ class AbstractIO(IO[T], Generic[T]):
         validation_fn = self.get_validation_fn()
         raise_if_not(self.can_have_as_validation_fn(validation_fn), InvalidStateException,
                      f"{self} has invalid validation function: ")
+
+    def get_all_connections(self) -> "Sequence[IConnection[T]]":
+        result = list(self.get_incoming_connections())
+        result.extend(self.get_outgoing_connections())
+        return result
 
     def get_incoming_connections(self) -> "Sequence[IConnection[T]]":
         raise NotImplementedError
@@ -162,21 +176,15 @@ class AbstractIO(IO[T], Generic[T]):
 
     def _deploy(self) -> None:
         assert not self._is_deployed()
-        for connection in self.get_incoming_connections():
-            if connection.get_source()._is_deployed() and not connection._is_deployed():
-                connection._deploy()  # access to protected member on purpose
-        for connection in self.get_outgoing_connections():
-            if connection.get_target()._is_deployed() and not connection._is_deployed():
+        for connection in self.get_all_connections():
+            if connection.get_source()._is_deployed() or connection.get_target()._is_deployed():
                 connection._deploy()  # access to protected member on purpose
         self.__is_deployed = True
 
     def _undeploy(self) -> None:
         assert self._is_deployed()
-        for connection in self.get_incoming_connections():
-            if connection._is_deployed():
-                connection._undeploy()  # access to protected member on purpose
-        for connection in self.get_outgoing_connections():
-            if connection._is_deployed():
+        for connection in self.get_all_connections():
+            if connection.get_source()._is_deployed() and connection.get_target()._is_deployed():
                 connection._undeploy()  # access to protected member on purpose
         self.__is_deployed = False
 
@@ -184,17 +192,7 @@ class AbstractIO(IO[T], Generic[T]):
         return self.__is_deployed
 
     def _assert_is_properly_deployed(self) -> None:
-        for connection in self.get_incoming_connections():
-            conn_is_deployed = connection._is_deployed()        # access to protected member on purpose
-            if self._is_deployed():
-                if conn_is_deployed != connection.get_source()._is_deployed():
-                    raise InvalidStateException(f"{connection}._is_deployed() == {conn_is_deployed}, but "
-                                                f"source is deployed == {connection.get_source()._is_deployed()} and "
-                                                f"target is deployed == True")
-            else:
-                if conn_is_deployed:
-                    raise InvalidStateException(f"{connection}._is_deployed() == {conn_is_deployed}, but "
-                                                f"target is deployed == False")
+        for connection in self.get_all_connections():
             connection._assert_is_properly_deployed()        # access to protected member on purpose
 
     def pull(self) -> T:
@@ -206,7 +204,7 @@ class AbstractIO(IO[T], Generic[T]):
     def get_value(self) -> T:
         with self._get_state_lock():
             if not self.__value_is_set:
-                return NoInputProvidedException(f"{self}.get_value() called, but value has not yet been set.")
+                raise NoInputProvidedException(f"{self}.get_value() called, but value has not yet been set.")
             return self.__value
 
     def _set_value(self, value: T) -> None:
@@ -229,9 +227,9 @@ class AbstractIO(IO[T], Generic[T]):
         with self._get_state_lock():
             return self.__value_is_set
 
-    def _wait_for_value(self, timeout=None) -> None:
+    def _wait_for_value(self, interruption_frequency: Optional[float] = None) -> None:
         with self._get_state_lock():
-            while not self.__value_is_set_signal.wait(timeout=timeout):
+            while not self.__value_is_set_signal.wait(timeout=interruption_frequency):
                 self.logger.warning(f"{self}.wait_for_value() waiting... @ AbstractIO level")
                 if not self._is_deployed():
                     raise NotDeployedException(f"{self} got undeployed while someone was waiting for the value. ")
@@ -287,14 +285,6 @@ class AbstractIO(IO[T], Generic[T]):
         self._assert_is_properly_deployed()
 
     def delete(self) -> None:
-        """
-        Deletes this IO, and all its internals.
-
-        Main mutator in the IO-ICell relation, as owner of the IO.
-
-        Raises:
-            CannotBeDeletedException
-        """
         if self._is_deployed():
             raise CannotBeDeletedException(f"{self} cannot be deleted while it is deployed.")
         if self.get_nb_incoming_connections() > 0:

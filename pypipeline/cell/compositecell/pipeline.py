@@ -25,18 +25,6 @@ class Pipeline(ACompositeCell):
         super(Pipeline, self).__init__(parent_cell, name=name, max_nb_internal_cells=max_nb_internal_cells)
 
     def _on_pull(self) -> None:
-        """
-        Override this method to add functionality that must happen when pulling the cell.
-
-        During a pull, a cell must pull its inputs, execute it's functionality and set its outputs.
-
-        Raises:
-            Exception: any exception that the user may raise when overriding _on_pull.
-
-        Won't raise:
-            NotDeployedException: this method will only be called when the cell is already deployed.
-            IndeterminableTopologyException: this method will only be called when the cell is already deployed.
-        """
         # Pull all sink cells
         sink_cells = [cell for cell in self.get_internal_cells() if cell.is_sink_cell()]
         for sink_cell in sink_cells:
@@ -53,7 +41,7 @@ class Pipeline(ACompositeCell):
         Returns the total number of times this cell can be pulled.
 
         Default implementation here is only valid if the cell pulls all its inputs once per cell pull. If this is
-        not the case, the cell must override this method. Also when a cell has no inputs, it has to override this
+        not the case, the cell must override this method. Also, when a cell has no inputs, it has to override this
         method itself.
 
         Returns:

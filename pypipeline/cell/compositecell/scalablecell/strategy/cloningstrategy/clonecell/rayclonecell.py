@@ -51,6 +51,14 @@ class RayActorPipeline(Pipeline):
                  logging_level: int = logging.WARNING,
                  logging_format: Optional[str] = None,
                  logging_datefmt: Optional[str] = None):
+        """
+        Args:
+            internal_cell: the scalable cell's internal cell to wrap in an ray actor pipeline.
+            name: the name of the new ray actor pipeline.
+            logging_level: the logging level to use inside the ray actor process.
+            logging_format: the logging format to use inside the ray actor process.
+            logging_datefmt: the logging date format to use inside the ray actor process.
+        """
         logging_params = {}
         if logging_format is not None:
             logging_params["format"] = logging_format
@@ -104,10 +112,15 @@ class RayCloneCell(ACloneCell):
     Ray clone cell class.
 
     This class abstracts away all Ray-related stuff: a ScalableCell can use it just like any other clone cell.
-    Behind the scenes, this clone cell creates the a clone of the original cell in a separate Ray actor process.
+    Behind the scenes, this clone cell creates a clone of the original cell in a separate Ray actor process.
     """
 
     def __init__(self, original_cell: "ICell", name: str):
+        """
+        Args:
+            original_cell: the scalable cell's internal cell to create a clone from.
+            name: the name of this ray clone cell.
+        """
         # A Ray actor pipeline is not considered as internal cell, as it runs in a different process.
         super(RayCloneCell, self).__init__(original_cell, name, max_nb_internal_cells=0)
 
@@ -132,34 +145,9 @@ class RayCloneCell(ACloneCell):
 
     @classmethod
     def create(cls, original_cell: "ICell", name: str) -> "RayCloneCell":
-        """
-        Factory method to create a new clone.
-
-        Args:
-            original_cell: the original cell to be cloned.
-            name: the name of the new clone cell.
-        Returns:
-            A new clone cell.
-        Raises:
-            InvalidInputException
-            NotImplementedError: if the original cell doesn't support cloning.
-        """
         return RayCloneCell(original_cell, name)
 
     def _on_pull(self) -> None:
-        """
-        Override this method to add functionality that must happen when pulling the cell.
-
-        During a pull, a cell must pull its inputs, execute it's functionality and set its outputs.
-
-        Raises:
-            StopIteration: when the end of the pipeline is reached.
-            Exception: any exception that the user may raise when overriding _on_pull.
-
-        Won't raise:
-            NotDeployedException: this method will only be called when the cell is already deployed.
-            IndeterminableTopologyException: this method will only be called when the cell is already deployed.
-        """
         # self.logger.debug(f"{self}.pull()")
         input_elements: Dict[str, Union[Any, Exception]] = {}
         for input_ in self.get_clone_inputs():
@@ -174,94 +162,27 @@ class RayCloneCell(ACloneCell):
             output.set_value(result)
 
     def update(self, event: "Event") -> None:
-        """
-        Will be called by the observables of this observer (ex: internal cell).
-
-        What should trigger this update:
-        - a parameter of the observed cell changes,
-
-        Args:
-            event: the event to notify this observer about.
-        """
         super(RayCloneCell, self).update(event)
         sync_state = self.get_original_cell()._get_sync_state()
         self.actor_ref.set_internal_cell_sync_state.remote(sync_state)   # type: ignore
 
     def _on_deploy(self) -> None:
-        """
-        Override this method to add functionality that must happen when deploying the cell.
-
-        Don't forget to call the _on_deploy of the super-class when overriding this method! Ex:
-        ```
-        def _on_deploy(self) -> None:
-            super(MyCell, self)._on_deploy()
-            # other deployment code
-        ```
-
-        Raises:
-            AlreadyDeployedException: if called when an internal cell is already deployed.
-            IndeterminableTopologyException: if the internal topology could not be determined.
-                Cannot happen in deploy(), as the is_deployable() method covers this case already.
-            Exception: any exception that the user may raise when overriding _on_deploy or _on_undeploy.
-        """
         super(RayCloneCell, self)._on_deploy()
         self.actor_ref.deploy.remote()          # type: ignore  # TODO may raise exceptions
 
     def _on_undeploy(self) -> None:
-        """
-        Override this method to add functionality that must happen when undeploying the cell.
-
-        Don't forget to call the _on_undeploy of the super-class when overriding this method! Ex:
-        ```
-        def _on_undeploy(self) -> None:
-            super(MyCell, self)._on_undeploy()
-            # other undeployment code
-        ```
-
-        Raises:
-            NotDeployedException: if called when an internal cell is not deployed.
-            Exception: any exception that the user may raise when overriding _on_undeploy.
-        """
         super(RayCloneCell, self)._on_undeploy()
         self.actor_ref.undeploy.remote()        # type: ignore  # TODO may raise exceptions
 
     def _on_reset(self) -> None:
-        """
-        Override this method to add functionality that must happen when resetting the cell.
-
-        During a reset, a cell must clear its internal state. This doesn't include cell configuration, but only
-        cell state that was accumulated during consecutive pulls.
-        Ex: reset the dataloader iterator of a dataloader cell.
-        Ex: the currently accumulated batch in a BatchingCell.
-
-        Don't forget to call the _on_reset of the super-class when overriding this method! Ex:
-        ```
-        def _on_reset(self) -> None:
-            super(MyCell, self)._on_reset()
-            # other resetting code
-        ```
-
-        Raises:
-            Exception: any exception that the user may raise when overriding _on_reset.
-        """
         super(RayCloneCell, self)._on_reset()
         self.actor_ref.reset.remote()     # type: ignore
 
     def assert_is_valid(self) -> None:
-        """
-        Raises:
-            InvalidStateException
-        """
         super(RayCloneCell, self).assert_is_valid()
         raise_if_not(self.actor_ref.assert_is_valid.remote(), InvalidStateException)    # type: ignore
 
     def delete(self) -> None:
-        """
-        Deletes this cell, and all its internals.
-
-        Raises:
-            CannotBeDeletedException
-        """
         raise_if_not(self.can_be_deleted(), CannotBeDeletedException)
         self.actor_ref.delete.remote()              # type: ignore  # TODO may raise exceptions
         self.actor_ref = None

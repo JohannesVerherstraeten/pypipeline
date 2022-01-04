@@ -52,7 +52,10 @@ class ScalableCellDeployment:
             scalable_cell: the scalable cell to be deployed.
         Raises:
             InvalidInputException
-            NotDeployableException
+            NotDeployableException – if the internal cell cannot be deployed.
+            AlreadyDeployedException – if the internal cell is already deployed.
+            NotDeployableException – if the internal cell cannot be deployed.
+            Exception – any exception that the user may raise when overriding _on_deploy or _on_undeploy
         """
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info(f"Creating ScalableCellDeployment...")
@@ -112,6 +115,8 @@ class ScalableCellDeployment:
 
         Args:
             scaling_strategy: the new scaling strategy to set.
+        Raises:
+            InvalidInputException: if the given scaling strategy is not valid.
         """
         if scaling_strategy is not None:
             raise_if_not(self.can_have_as_scaling_strategy(scaling_strategy), InvalidInputException)
@@ -284,7 +289,6 @@ class ScalableCellDeployment:
         Executed when the scalable cell gets pulled.
 
         Raises:
-            StopIteration: when the end of the pipeline is reached.
             NotDeployedException: when the scalable cell is not deployed.
             InactiveException: when the scalable cell is inactive (ex: it has no active scale-up worker threads).
             # TODO may raise exceptions

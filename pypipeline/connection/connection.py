@@ -56,12 +56,11 @@ class Connection(IConnection[T], Generic[T]):
                  target: "IConnectionEntryPoint[T]",
                  explicitly_mark_as_recurrent: Optional[bool] = None):
         """
-        You can explicitly mark this connection as (non-)recurrent by providing a boolean value to the
-        explicitly_mark_as_recurrent flag.
         Args:
-            source:
-            target:
-            explicitly_mark_as_recurrent:
+            source: the source (or start) of the new connection.
+            target: the target (or end) of the new connection.
+            explicitly_mark_as_recurrent: explicitly mark this connection as (non-)recurrent. If None, PyPipeline will
+                try to infer the recurrency automatically.
         """
         self.logger = getLogger(self.__class__.__name__)
 
@@ -93,42 +92,20 @@ class Connection(IConnection[T], Generic[T]):
         self.__is_deployed: bool = False
 
     def get_source(self) -> "IConnectionExitPoint[T]":
-        """
-        Returns:
-            The source IO of this connection.
-        """
         return self.__source
 
     @classmethod
     def can_have_as_source(cls, source: "IConnectionExitPoint[T]") -> BoolExplained:
-        """
-        Args:
-            source: the connection exit point to validate.
-        Returns:
-            TrueExplained if the given connection exit point is a valid source for this connection.
-            FalseExplained otherwise.
-        """
         if not isinstance(source, pypipeline.cellio.IConnectionExitPoint):
             return FalseExplained(f"{cls} expects an instance of sdk.cellio.IConnectionExitPoint as source, "
                                   f"got {source}")
         return TrueExplained()
 
     def get_target(self) -> "IConnectionEntryPoint[T]":
-        """
-        Returns:
-            The target IO of this connection.
-        """
         return self.__target
 
     @classmethod
     def can_have_as_target(cls, target: "IConnectionEntryPoint[T]") -> BoolExplained:
-        """
-        Args:
-            target: the connection entry point to validate.
-        Returns:
-            TrueExplained if the given connection entry point is a valid target for this connection.
-            FalseExplained otherwise.
-        """
         if not isinstance(target, pypipeline.cellio.IConnectionEntryPoint):
             return FalseExplained(f"{cls} expects an instance of sdk.cellio.IConnectionEntryPoint as target, "
                                   f"got {target}")
@@ -138,14 +115,6 @@ class Connection(IConnection[T], Generic[T]):
     def can_have_as_source_and_target(cls,
                                       source: "IConnectionExitPoint[T]",
                                       target: "IConnectionEntryPoint[T]") -> BoolExplained:
-        """
-        Args:
-            source: the connection exit point to validate.
-            target: the connection entry point to validate.
-        Returns:
-            TrueExplained if this connection can connect the given exit- and entry points in a valid way.
-            FalseExplained otherwise.
-        """
         src_and_target_ok: BoolExplained = TrueExplained()
         src_and_target_ok *= cls.can_have_as_source(source)
         src_and_target_ok *= cls.can_have_as_target(target)
@@ -168,10 +137,6 @@ class Connection(IConnection[T], Generic[T]):
         return TrueExplained()
 
     def assert_has_proper_source_and_target(self) -> None:
-        """
-        Raises:
-            InvalidStateException: the source and target of this connection are invalid.
-        """
         raise_if_not(self.can_have_as_source_and_target(self.get_source(), self.get_target()), InvalidStateException)
         if not self.get_source().has_as_outgoing_connection(self):
             raise InvalidStateException(f"Inconsistent relation: {self.get_source()} doesn't have {self} as outgoing "
@@ -181,40 +146,24 @@ class Connection(IConnection[T], Generic[T]):
                                         f"connection.")
 
     def get_parent_cell(self) -> "ICompositeCell":
-        """
-        Returns:
-            The parent cell of this connection. (Inside which cell the connection is made)
-        """
         return self.__parent_cell
 
     @classmethod
     def can_have_as_parent_cell(cls, cell: "ICompositeCell") -> BoolExplained:
-        """
-        Args:
-            cell: the cell to validate.
-        Returns:
-            TrueExplained if the given cell is a valid parent cell for this connection. FalseExplained otherwise.
-        """
         if not isinstance(cell, pypipeline.cell.ICompositeCell):
             return FalseExplained(f"{cls} expects an instance of sdk.cell.ICompositeCell as parent, got {cell}. ")
         return TrueExplained()
 
     def assert_has_proper_parent_cell(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if the parent cell of this connection is invalid.
-        """
         raise_if_not(self.can_have_as_parent_cell(self.get_parent_cell()), InvalidStateException)
         if not self.get_parent_cell().has_as_internal_connection(self):
             raise InvalidStateException(f"Inconsistent relation: {self.get_parent_cell()} doesn't have {self} as "
                                         f"internal connection.")
 
     def is_inter_cell_connection(self) -> bool:
-        """Connection between 2 cells with the same parent cell"""
         return _is_inter_cell_connection(self.get_source(), self.get_target())
 
     def is_intra_cell_connection(self) -> bool:
-        """Connection between a composite cell's IO and one of its child cells"""
         return _is_intra_cell_connection(self.get_source(), self.get_target())
 
     def is_explicitly_marked_as_recurrent(self) -> bool:
@@ -241,10 +190,13 @@ class Connection(IConnection[T], Generic[T]):
     def assert_has_proper_topology(self) -> None:
         # The topology should not necessarily be determined already for a connection to be valid.
         # But if it is determined, it should be consistent with the explicit recurrency markings.
+        if not self._is_deployed():
+            # If not deployed, the pipeline may still be in an unfinished state. -> not necessarily invalid.
+            return
         try:
             is_recurrent = self.is_recurrent()
-        except IndeterminableTopologyException:
-            pass
+        except IndeterminableTopologyException as e:
+            raise InvalidStateException(f"{self} is deployed but doesn't have a topology: {str(e)}")
         else:
             if not is_recurrent and self.is_explicitly_marked_as_recurrent():
                 raise InvalidStateException(f"{self} is explicitly marked as recurrent, but is_recurrent() returns "
@@ -265,7 +217,12 @@ class Connection(IConnection[T], Generic[T]):
         return self.__is_deployed
 
     def _assert_is_properly_deployed(self) -> None:
-        pass
+        source_is_deployed = self.get_source()._is_deployed()   # Access to protected method on purpose
+        target_is_deployed = self.get_target()._is_deployed()   # Access to protected method on purpose
+        if self._is_deployed() != (source_is_deployed and target_is_deployed):
+            raise InvalidStateException(f"{self} is {'' if self._is_deployed() else 'not '}deployed, but "
+                                        f"{self.get_source()} is {'' if source_is_deployed else 'not '}deployed and "
+                                        f"{self.get_target()} is {'' if target_is_deployed else 'not '}deployed.")
 
     def pull(self) -> T:
         # self.logger.warning(f"Pulling {self}")
@@ -281,18 +238,9 @@ class Connection(IConnection[T], Generic[T]):
         self.assert_has_proper_source_and_target()
         self.assert_has_proper_parent_cell()
         self.assert_has_proper_topology()
+        self._assert_is_properly_deployed()
 
     def delete(self) -> None:
-        """
-        Delete this connection.
-
-        Main mutator in the IConnection-IConnectionEntryPoint relation, as an incoming connection of the entry point.
-        Main mutator in the IConnection-IConnectionExitPoint relation, as an outgoing connection of the exit point.
-        Main mutator in the IConnection-ICompositeCell relation, as internal connection of the composite cell.
-
-        Raises:
-            CannotBeDeletedException
-        """
         if self.__parent_cell.is_deployed():
             raise CannotBeDeletedException(f"{self} cannot be deleted while its parent cell {self.__parent_cell} "
                                            f"is deployed.")
@@ -353,7 +301,7 @@ def _is_inter_cell_connection(source: "IConnectionExitPoint[T]", target: "IConne
 def _get_parent_cell(source: "IConnectionExitPoint[T]",
                      target: "IConnectionEntryPoint[T]") -> "ICompositeCell":
     """
-    If a connection would be made between these endpoints, what would be its parent cell?
+    If a connection is made between these endpoints, what would be its parent cell?
 
     May raise:
      - InvalidInputException

@@ -72,13 +72,6 @@ class AlreadyDeployedException(Exception):
     pass
 
 
-class NoInternalCellException(Exception):
-    """
-    Raised when a composite cell requires an internal cell, but has none.
-    """
-    pass
-
-
 class CannotBeDeletedException(Exception):
     """
     Raised when an object cannot be deleted.

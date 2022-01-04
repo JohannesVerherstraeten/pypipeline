@@ -40,6 +40,10 @@ class ICell(IObservable):
     """
 
     def _get_pull_lock(self) -> "RLock":
+        """
+        Returns:
+            The pull lock which makes sure that this cell is not pulled concurrently.
+        """
         raise NotImplementedError
 
     def get_name(self) -> str:
@@ -388,8 +392,6 @@ class ICell(IObservable):
 
     def assert_has_proper_observers(self) -> None:
         """
-        Auxiliary validator in the IObserver-IObservable relation, as observable.
-
         Raises:
             InvalidStateException: if one of this cell's observers is invalid.
         """
@@ -448,7 +450,7 @@ class ICell(IObservable):
         for stateful cells.
 
         Returns:
-            True if this cell supports scaling. False otherwise.
+            True if this cell supports being scaled up more than once. False otherwise.
         """
         raise NotImplementedError
 
@@ -477,6 +479,7 @@ class ICell(IObservable):
          - spawning cell clones
 
         Raises:
+            NotDeployableException: if this cell cannot be deployed.
             AlreadyDeployedException: if this cell is already deployed.
             NotDeployableException: if the cell cannot be deployed because some preconditions are not met.
             Exception: any exception that the user may raise when overriding _on_deploy or _on_undeploy.
@@ -625,6 +628,5 @@ class ICell(IObservable):
 
         Raises:
             AlreadyDeployedException: if the cell is deployed.
-            InvalidInputException
         """
         raise NotImplementedError

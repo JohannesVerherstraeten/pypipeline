@@ -45,7 +45,7 @@ class ACell(ICell):
     """
 
     __INPUT_STATES_KEY: str = "input_states"
-    PULL_TIMEOUT: float = 5.0
+    PULL_TIMEOUT: float = 5.0       # TODO use configparameter, like ScalableCell.config_check_quit_interval
 
     def __init__(self, parent_cell: "Optional[ICompositeCell]", name: str) -> None:
         """
@@ -81,31 +81,15 @@ class ACell(ICell):
     # ------ Cell name ------
 
     def get_name(self) -> str:
-        """
-        Returns:
-            The name of this cell.
-        """
         return self.__name
 
     def get_full_name(self) -> str:
-        """
-        Returns:
-            The name of this cell, preceded by the full name of the parent cell.
-            Format: grand_parent_name.parent_name.cell_name
-        """
         parent_cell = self.get_parent_cell()
         prefix = parent_cell.get_full_name() + "." if parent_cell is not None else ""
         return prefix + self.get_name()
 
     @classmethod
     def can_have_as_name(cls, name: str) -> BoolExplained:
-        """
-        Args:
-            name: the name to validate.
-        Returns:
-            TrueExplained if the name is a valid name for this cell.
-            FalseExplained otherwise.
-        """
         if not isinstance(name, str):
             return FalseExplained(f"Name should be a string, got {name}")
         elif len(name) == 0:
@@ -115,31 +99,14 @@ class ACell(ICell):
         return TrueExplained()
 
     def assert_has_proper_name(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if the name of this cell is invalid.
-        """
         raise_if_not(self.can_have_as_name(self.get_name()), InvalidStateException, f"{self} has invalid name: ")
 
     # ------ Parent cell ------
 
     def get_parent_cell(self) -> "Optional[ICompositeCell]":
-        """
-        Returns:
-            The parent cell of this cell, if it has one.
-        """
         return self.__parent_cell
 
     def _set_parent_cell(self, parent_cell: "Optional[ICompositeCell]") -> None:
-        """
-        Auxiliary mutator in the ICompositeCell-ICell, as internal cell of a parent composite cell.
-        -> Should only be used by ICompositeCell instances when registering this as internal cell.
-
-        Args:
-            parent_cell: the new parent cell.
-        Raises:
-            InvalidInputException
-        """
         raise_if_not(self.can_have_as_parent_cell(parent_cell), InvalidInputException)
         if self.get_parent_cell() is not None and parent_cell is not None:
             raise InvalidInputException(f"{self} already has a parent cell: {self.get_parent_cell()}")
@@ -147,13 +114,6 @@ class ACell(ICell):
 
     @classmethod
     def can_have_as_parent_cell(cls, cell: "Optional[ICompositeCell]") -> BoolExplained:
-        """
-        Args:
-            cell: the cell to validate.
-        Returns:
-            TrueExplained if the cell is a valid parent cell for this cell.
-            FalseExplained otherwise.
-        """
         if cell is None:
             return TrueExplained()
         if not isinstance(cell, pypipeline.cell.compositecell.icompositecell.ICompositeCell):
@@ -162,10 +122,6 @@ class ACell(ICell):
         return TrueExplained()
 
     def assert_has_proper_parent_cell(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if this cell doesn't have a valid parent cell.
-        """
         parent_cell = self.get_parent_cell()
         raise_if_not(self.can_have_as_parent_cell(parent_cell), InvalidStateException,
                      f"{self} has an invalid parent cell: ")
@@ -175,23 +131,11 @@ class ACell(ICell):
     # ------ General IO ------
 
     def get_all_io(self) -> Sequence["IO"]:
-        """
-        Returns:
-            All inputs and outputs (IO) of this cell.
-        """
         result: List["IO"] = list(self.__inputs.values())
         result.extend(self.__outputs.values())
         return result
 
     def get_io(self, name: str) -> "IO":
-        """
-        Args:
-            name: the name of the cell's input/output to get.
-        Returns:
-            This cell's input/output with the given name.
-        Raises:
-            KeyError: this cell has no IO with the given name.
-        """
         if name in self.__inputs:
             return self.__inputs[name]
         elif name in self.__outputs:
@@ -200,28 +144,12 @@ class ACell(ICell):
             raise KeyError(f"Cell {self} has no input or output with name {name}")
 
     def get_io_names(self) -> Sequence[str]:
-        """
-        Returns:
-            The names of all IO of this cell.
-        """
         return [io.get_name() for io in self.get_all_io()]
 
     def has_as_io(self, io: "IO") -> bool:
-        """
-        Args:
-            io: an input/output (IO) object.
-        Returns:
-            True if the given IO is part of this cell, False otherwise.
-        """
         return io in self.__inputs.values() or io in self.__outputs.values()
 
     def can_have_as_io(self, io: "IO") -> "BoolExplained":
-        """
-        Args:
-            io: IO object (input or output) to validate.
-        Returns:
-            TrueExplained if the given IO is a valid IO for this cell. FalseExplained otherwise.
-        """
         if not isinstance(io, pypipeline.cellio.icellio.IO):
             return FalseExplained(f"Cell IO must be of type IO, got {type(io)}")
         if not isinstance(io, (pypipeline.cellio.IInput, pypipeline.cellio.IOutput)):
@@ -229,16 +157,6 @@ class ACell(ICell):
         return TrueExplained()
 
     def _add_io(self, io: "IO") -> None:
-        """
-        Auxiliary mutator in the IO-ICell relation, as owner of the IO.
-        -> Should only be used by IO instances in their __init__.
-
-        Args:
-            io: the IO (input/output) to add to this cell.
-        Raises:
-            AlreadyDeployedException: if the cell is already deployed.
-            InvalidInputException
-        """
         if self.is_deployed():
             raise AlreadyDeployedException(f"{self}: an input cannot be added when this cell is deployed.")
         raise_if_not(self.can_have_as_io(io), InvalidInputException)
@@ -252,16 +170,6 @@ class ACell(ICell):
             assert False
 
     def _remove_io(self, io: "IO") -> None:
-        """
-        Auxiliary mutator in the IO-ICell relation, as owner of the IO.
-        -> Should only be used by IO instances in their delete().
-
-        Args:
-            io: the IO (input/output) to remove from this cell.
-        Raises:
-            AlreadyDeployedException: if the cell is already deployed.
-            InvalidInputException
-        """
         if self.is_deployed():
             raise AlreadyDeployedException(f"{self}: an input cannot be removed when this cell is deployed.")
         if not self.has_as_io(io):
@@ -276,10 +184,6 @@ class ACell(ICell):
             assert False
 
     def assert_has_proper_io(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if one of this cell's IO is invalid.
-        """
         for io in self.get_all_io():
             raise_if_not(self.can_have_as_io(io), InvalidStateException)
             if io.get_cell() != self:
@@ -289,159 +193,58 @@ class ACell(ICell):
     # ------ Inputs ------
 
     def get_inputs(self) -> Sequence["IInput"]:
-        """
-        Returns:
-            All inputs of this cell.
-        """
         return tuple(self.__inputs.values())
 
     def get_input_names(self) -> Sequence[str]:
-        """
-        Returns:
-            The names of all inputs of this cell.
-        """
         return tuple(self.__inputs.keys())
 
     def get_input(self, name: str) -> "IInput":
-        """
-        Raises:
-            KeyError: this cell has no input with the given name.
-        """
         return self.__inputs[name]
 
     def get_inputs_recursively(self) -> Sequence["IInput"]:
-        """
-        Returns:
-            All inputs of this cell, and those of its internal cells.
-        """
         return self.get_inputs()
 
     def get_input_recursively(self, full_name: str) -> "IInput":
-        """
-        Get the input with the given full name.
-
-        If the input belongs to this cell, it should be just the ordinary input name.
-        If the input belongs to an internal cell, the full name should be relative to this cell.
-
-        Args:
-            full_name: the full name of the input to get.
-        Returns:
-            The input of this cell, or one of the internal cells, with the given full name.
-        Raises:
-            KeyError: this cell and its internal cells have no input with the given name.
-        """
         return self.get_input(full_name)
 
     def has_as_input(self, cell_input: "IInput") -> bool:
-        """
-        Args:
-            cell_input: an input object.
-        Returns:
-            True if the given input is part of this cell, false otherwise.
-        """
         return cell_input in self.__inputs.values()
 
     # ------ Outputs ------
 
     def get_outputs(self) -> Sequence["IOutput"]:
-        """
-        Returns:
-            All outputs of this cell.
-        """
         return tuple(self.__outputs.values())
 
     def get_output_names(self) -> Sequence[str]:
-        """
-        Returns:
-            The names of all outputs of this cell.
-        """
         return tuple(self.__outputs.keys())
 
     def get_output(self, name: str) -> "IOutput":
-        """
-        Raises:
-            KeyError: this cell has no output with the given name.
-        """
         return self.__outputs[name]
 
     def get_outputs_recursively(self) -> Sequence["IOutput"]:
-        """
-        Returns:
-            All outputs of this cell, and those of its internal cells.
-        """
         return self.get_outputs()
 
     def get_output_recursively(self, full_name: str) -> "IOutput":
-        """
-        Get the output with the given full name.
-
-        If the output belongs to this cell, it should be just the ordinary output name.
-        If the output belongs to an internal cell, the full name should be relative to this cell.
-
-        Args:
-            full_name: the full name of the output to get.
-        Returns:
-            The output of this cell, or one of the internal cells, with the given full name.
-        Raises:
-            KeyError: this cell and its internal cells have no output with the given name.
-        """
         return self.get_output(full_name)
 
     def has_as_output(self, cell_output: "IOutput") -> bool:
-        """
-        Args:
-            cell_output: an output object.
-        Returns:
-            True if the given output is part of this cell, false otherwise.
-        """
         return cell_output in self.__outputs.values()
 
     # ------ Topology ------
 
     def is_source_cell(self) -> bool:
-        """
-        Source cells are cells that provide data to a pipeline.
-
-        Source cells in a pipeline are the ones that need to be executed before any of the other cells.
-        See also sink cells. A cell can be both a source and a sink at the same time.
-
-        Returns:
-            True if this cell is a source cell.
-        Raises:
-            IndeterminableTopologyException: if the topology of this cell w.r.t. the surrounding cells could not be
-                determined.
-        """
         parent_cell = self.get_parent_cell()
         if parent_cell is None:
             return True
         return parent_cell._has_as_internal_source_cell(self)   # access to protected method on purpose # TODO may raise exceptions
 
     def is_sink_cell(self) -> bool:
-        """
-        Sink cells are cells that remove data from a pipeline.
-
-        Sink cells in a pipeline are the ones that can only be executed after all other cells.
-        See also source cells. A cell can be both a source and a sink at the same time.
-
-        Returns:
-            True if this cell is a sink cell.
-        Raises:
-            IndeterminableTopologyException: if the topology of this cell w.r.t. the surrounding cells could not be
-                determined.
-        """
         parent_cell = self.get_parent_cell()
         if parent_cell is None:
             return True
         return parent_cell._has_as_internal_sink_cell(self)     # access to protected method on purpose # TODO may raise exceptions
 
     def get_topology_description(self) -> Dict[str, Any]:
-        """
-        Returns:
-            A dictionary (json format), fully describing the topological properties if this cell.
-        Raises:
-            IndeterminableTopologyException: if the topology of this cell w.r.t. the surrounding cells could not be
-                determined.
-        """
         result = {
             "cell": str(self),
             "type": self.__class__.__name__,
@@ -457,22 +260,9 @@ class ACell(ICell):
     # ------ State synchronization between a cell and its clones ------
 
     def get_observers(self) -> Sequence["IObserver"]:
-        """
-        Returns:
-            All observers of this cell.
-        """
         return tuple(self.__observers)
 
     def _add_observer(self, observer: "IObserver") -> None:
-        """
-        Auxiliary mutator in the IObserver-IObservable relation, as observable.
-        -> Should only be used by IObserver instances when registering this as observable.
-
-        Args:
-            observer: the observer to add.
-        Raises:
-            InvalidInputException
-        """
         raise_if_not(self.can_have_as_observer(observer), InvalidInputException,
                      f"{self} cannot have {observer} as observer: ")
         if self.has_as_observer(observer):
@@ -480,45 +270,20 @@ class ACell(ICell):
         self.__observers.append(observer)
 
     def _remove_observer(self, observer: "IObserver") -> None:
-        """
-        Auxiliary mutator in the IObserver-IObservable relation, as observable.
-        -> Should only be used by IObserver instances when unregistering this as observable.
-
-        Args:
-            observer: the observer to remove.
-        Raises:
-            InvalidInputException
-        """
         if not self.has_as_observer(observer):
             raise InvalidInputException(f"{self} does not have {observer} as observer")
         self.__observers.remove(observer)
 
     @classmethod
     def can_have_as_observer(cls, observer: "IObserver") -> BoolExplained:
-        """
-        Args:
-            observer: observer to validate
-        Returns:
-            TrueExplained if the given observer is valid. FalseExplained otherwise.
-        """
         if not isinstance(observer, pypipeline.cell.icellobserver.IObserver):
             return FalseExplained(f"Observer should be of type IObserver, got {type(observer)}")
         return TrueExplained()
 
     def has_as_observer(self, observer: "IObserver") -> bool:
-        """
-        Args:
-            observer: an observer object.
-        Returns:
-            True if the given observer is observing this cell, false otherwise.
-        """
         return observer in self.__observers
 
     def assert_has_proper_observers(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if one of this cell's observers is invalid.
-        """
         observers = self.get_observers()
         for observer in observers:
             raise_if_not(self.can_have_as_observer(observer), InvalidStateException, f"{self} has invalid observer: ")
@@ -528,26 +293,12 @@ class ACell(ICell):
                 raise InvalidStateException(f"{self} has {observer} multiple times as observer.")
 
     def notify_observers(self, event: "Event") -> None:
-        """
-        Notify all observers of this cell that the given event just happened.
-
-        Args:
-            event: an event object, indicating what the observers should be notified of.
-        Raises:
-            TODO may raise exceptions?
-        """
         for observer in self.get_observers():
             if self.is_deployed():
                 self.logger.debug(f"{self} notifying observer {observer} of internal state change")
             observer.update(event)
 
     def _get_sync_state(self) -> Dict[str, Any]:
-        """
-        Used for synchronizing the state of clone cells with that of their corresponding original one.
-
-        Returns:
-            A (nested) dictionary, containing the state of this cell.
-        """
         with self._get_pull_lock():
             state: Dict[str, Any] = dict()
 
@@ -557,14 +308,6 @@ class ACell(ICell):
         return state
 
     def _set_sync_state(self, state: Dict) -> None:
-        """
-        Used for synchronizing the state of clone cells with that of their corresponding original one.
-
-        Args:
-            state: a (nested) dictionary, containing the new state of this cell.
-        Raises:
-            KeyError: when the state dictionary contains the name of a cell or IO that is not available in this cell.
-        """
         self.logger.debug(f"{self} setting sync state: \n{pformat(state)}")
         assert self.__INPUT_STATES_KEY in state
 
@@ -575,40 +318,15 @@ class ACell(ICell):
                 input_._set_sync_state(input_state)     # access to protected method on purpose
 
     def clone(self, new_parent: "Optional[ICompositeCell]") -> "ACell":
-        """
-        Clone this cell to a new parent cell.
-
-        Override this method if your cell instantiation requires more/other arguments than implemented here.
-        If the cell doesn't support being cloned, raise NotImplementedError.
-
-        Args:
-            new_parent: the parent to which this cell should be cloned.
-        Returns:
-            The cloned cell.
-        Raises:
-            NotImplementedError: if this cell doesn't support cloning.
-        """
         cell_type: Type["ACell"] = type(self)
         return cell_type(new_parent, self.get_name())       # TODO raise proper exception when the cell has another __init__ signature.
 
     def supports_scaling(self) -> bool:
-        """
-        A cell support scaling if it supports multiple clones of it running in parallel. This should usually be False
-        for stateful cells.
-
-        Returns:
-            True if this cell supports scaling. False otherwise.
-        """
         raise NotImplementedError
 
     # ------ Deployment ------
 
     def inputs_are_provided(self) -> "BoolExplained":
-        """
-        Returns:
-            TrueExplained if all inputs of this cell are provided (they have an incoming connection, a default,
-            value, ...)
-        """
         result: BoolExplained = TrueExplained()
         for input_ in self.get_inputs():
             if not input_.is_provided():
@@ -617,26 +335,9 @@ class ACell(ICell):
         return result
 
     def is_deployable(self) -> "BoolExplained":
-        """
-        Returns:
-            TrueExplained if all preconditions for deployment are met. FalseExplained otherwise.
-        """
         return self.inputs_are_provided()
 
     def deploy(self) -> None:
-        """
-        Deploy this cell.
-
-        Deploying prepares a cell to be executed. This includes (not exhaustively):
-         - validating whether all preconditions for deployment are met
-         - acquiring resources needed to run the cell
-         - spawning cell clones
-
-        Raises:
-            AlreadyDeployedException: if this cell (or an internal cell) is already deployed.
-            NotDeployableException: if the cell cannot be deployed because some preconditions are not met.
-            Exception: any exception that the user may raise when overriding _on_deploy or _on_undeploy.
-        """
         with self._get_pull_lock():
             if self.is_deployed():
                 raise AlreadyDeployedException(f"{self} is already deployed.")
@@ -657,6 +358,7 @@ class ACell(ICell):
         ```
 
         Raises:
+            NotDeployableException: if this cell cannot be deployed.
             AlreadyDeployedException: if called when an internal cell is already deployed.
             IndeterminableTopologyException: if the internal topology could not be determined.
                 Cannot happen in deploy(), as the is_deployable() method covers this case already.
@@ -666,17 +368,6 @@ class ACell(ICell):
             io._deploy()        # access to protected member on purpose
 
     def undeploy(self) -> None:
-        """
-        Undeploy this cell.
-
-        Opposite of deploying. This includes (not exhaustively):
-         - releasing resources that the cell acquired
-         - removing all spawned cell clones
-
-        Raises:
-            NotDeployedException: if this cell is not deployed.
-            Exception: any exception that the user may raise when overriding _on_undeploy.
-        """
         with self._get_pull_lock():
             if not self.is_deployed():
                 raise NotDeployedException(f"{self} is not deployed.")
@@ -703,18 +394,10 @@ class ACell(ICell):
             io._undeploy()        # access to protected member on purpose
 
     def is_deployed(self) -> bool:
-        """
-        Returns:
-            True if this cell is deployed, False otherwise.
-        """
         with self._get_pull_lock():
             return self.__is_deployed
 
     def assert_is_properly_deployed(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if the cell is not properly deployed.
-        """
         with self._get_pull_lock():
             for io in self.get_all_io():
                 io_is_deployed = io._is_deployed()      # access to protected member on purpose
@@ -726,25 +409,6 @@ class ACell(ICell):
     # ------ Pulling ------
 
     def pull_as_output(self, output: "IOutput") -> None:        # TODO hide in public interface -> make protected?
-        """
-        Cells should only execute again when all their outputs have pulled the previous result.
-        This is to avoid that the cell is executed again while another downstream cell still needed an old output
-        value.
-        For example: imagine two ScalableCells each connected to a different output of a source cell. If the first
-        scalablecell executes faster than the second one, it might request to pull the source cell multiple times while
-        the other has only pulled the source cell once. If this pull would not block, the other scalablecell would miss
-        some source outputs.
-
-        Note: calling this method will block forever when an output pulls twice while all other outputs don't pull at
-        all.
-
-        Args:
-            output: the output that wants to pull this cell.
-        Raises:
-            NotDeployedException: if the cell is not deployed.
-            Exception: any exception that the user may raise when overriding _on_pull.
-            TODO may raise exceptions (more than written here, same as self.pull() ?)
-        """
         self.logger.debug(f"{self}.pull_as_output()")
 
         # Full method is a critical section
@@ -797,20 +461,6 @@ class ACell(ICell):
             self.logger.debug(f"{self}.pull_as_output() done")
 
     def pull(self) -> None:
-        """
-        During a pull, a cell will pull its inputs, execute it's functionality and set its outputs.
-
-        Since a cell pulls its inputs before it executes, all prerequisite cells are pulled recursively up to
-        the source cells, before this pull finishes.
-
-        Raises:
-            NotDeployedException: if the cell is not deployed.
-            Exception: any exception that the user may raise when overriding _on_pull.
-            # TODO may raise exceptions (more exceptions in case of scalable cells etc...)
-
-        Won't raise:
-            IndeterminableTopologyException: this method can only be called when the cell is already deployed.
-        """
         with self._get_pull_lock():
             if not self.is_deployed():
                 raise NotDeployedException(f"You must deploy first before you can pull: {self}.deploy()")
@@ -821,9 +471,10 @@ class ACell(ICell):
         """
         Override this method to add functionality that must happen when pulling the cell.
 
-        During a pull, a cell must pull its inputs, execute it's functionality and set its outputs.
+        During a pull, a cell must pull its inputs, execute its functionality and set its outputs.
 
         Raises:
+            InactiveException: when a scalable cell is inactive (ex: it has no active scale-up worker threads).
             Exception: any exception that the user may raise when overriding _on_pull.
 
        Won't raise:
@@ -833,11 +484,6 @@ class ACell(ICell):
         raise NotImplementedError
 
     def all_outputs_have_been_pulled(self) -> bool:
-        """
-        Returns:
-            True if all the outputs of this cell have been pulled if needed, meaning that they are ready to receive new
-            output values (a new cell.pull() can be done).
-        """
         with self.__pull_as_output_lock:
             all_have_been_pulled = True
             for output in self.get_outputs():
@@ -847,28 +493,10 @@ class ACell(ICell):
         return all_have_been_pulled
 
     def _notify_connection_has_pulled(self) -> None:
-        """
-        Notifies the cell that one of the outgoing connections successfully pulled, and that other threads waiting
-        for the pull lock may be notified.
-        """
         with self.__pull_as_output_lock:
             self.__pull_as_output_lock.notify_all()
 
     def get_nb_available_pulls(self) -> Optional[int]:
-        """
-        Returns the total number of times this cell can be pulled.
-
-        Default implementation here is only valid if the cell pulls all its inputs once per cell pull. If this is
-        not the case, the cell must override this method. Also when a cell has no inputs, it has to override this
-        method itself.
-
-        Returns:
-            The total number of times this cell can be pulled, or
-            None if cell can be pulled infinitely or an unspecified amount of time.
-        Raises:
-            IndeterminableTopologyException: if the topology of this cell w.r.t. the surrounding cells could not be
-                determined.
-        """
         if self.is_source_cell():
             raise NotImplementedError(f"{self}: a source cell should override get_nb_available_pulls()")
         inputs = self.get_inputs()
@@ -879,22 +507,6 @@ class ACell(ICell):
         return min(available_pulls_per_input_no_none)
 
     def reset(self) -> None:
-        """
-        Reset the internal state of a cell and its prerequisite cells.
-
-        Just like the pull() method, this reset is recursively propagated through all prerequisite cells
-        up to the source cells.
-
-        Resetting internal state does not include cell configuration, but only cell state that was accumulated
-        during consecutive pulls.
-        Ex: reset the dataloader iterator of a dataloader cell.
-        Ex: the currently accumulated batch in a BatchingCell.
-
-        Raises:
-            NotDeployedException: if the cell is not deployed.
-            Exception: any exception that the user may raise when overriding _on_reset.
-            # TODO may raise exceptions (more exceptions in case of scalable cells etc...)
-        """
         with self._get_pull_lock():
             self.logger.info(f"{self}.reset()")
             if not self.is_deployed():
@@ -930,23 +542,11 @@ class ACell(ICell):
         self.__has_been_pulled_at_least_once = False
 
     def get_nb_required_gpus(self) -> float:
-        """
-        Override this method to indicate how much GPUs your cell needs.
-
-        Note: very experimental feature - might not yet work at all.
-
-        Returns:
-            The number of GPUs this cell needs. Can be a fraction.
-        """
         raise NotImplementedError
 
     # ------ General validation ------
 
     def assert_is_valid(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if one of the attributes or relations of this cell is invalid.
-        """
         self.assert_has_proper_name()
         self.assert_has_proper_parent_cell()
         self.assert_has_proper_io()
@@ -972,12 +572,6 @@ class ACell(ICell):
         return TrueExplained()
 
     def delete(self) -> None:
-        """
-        Deletes this cell, and all its internals.
-
-        Raises:
-            CannotBeDeletedException
-        """
         raise_if_not(self.can_be_deleted(), CannotBeDeletedException)
         if self.__parent_cell is not None:
             self.__parent_cell._remove_internal_cell(self)      # Access to protected method on purpose

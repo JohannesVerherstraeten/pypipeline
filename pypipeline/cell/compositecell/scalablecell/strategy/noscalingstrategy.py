@@ -24,24 +24,41 @@ if TYPE_CHECKING:
 
 
 class NoScalingStrategy(AScalingStrategy):
+    """
+    No-Scaling strategy class.
+
+    A scaling strategy determines how a scalable cell should be executed. ATM 2 strategies are implemented:
+     - the CloningStrategy (default): allows to scale up using clones of the internal cell
+     - the NoScalingStrategy: doesn't allow scaling and executes the scalable cell's internal cell in the mainthread,
+       just like a Pipeline. Useful for debugging.
+    """
 
     def __init__(self, scalable_cell_deployment: "ScalableCellDeployment"):
+        """
+        Args:
+            scalable_cell_deployment: the scalable cell deployment where this scaling strategy belongs to.
+        Raises:
+            NotDeployableException – if the internal cell cannot be deployed.
+            AlreadyDeployedException – if the internal cell is already deployed.
+            NotDeployableException – if the internal cell cannot be deployed.
+            Exception – any exception that the user may raise when overriding _on_deploy or _on_undeploy
+        """
         super(NoScalingStrategy, self).__init__(scalable_cell_deployment)
-        self.get_internal_cell().deploy()       # TODO may raise exceptions
+        self.get_internal_cell().deploy()
 
     @classmethod
     def create(cls, scalable_cell_deployment: "ScalableCellDeployment") -> "NoScalingStrategy":
         return NoScalingStrategy(scalable_cell_deployment)
 
     def delete(self) -> None:
-        self.get_internal_cell().undeploy()     # TODO may raise exceptions
+        self.get_internal_cell().undeploy()
         super(NoScalingStrategy, self).delete()
 
     def _on_pull(self) -> None:
         self.logger.debug(f"{self}.pull()")
         # Just execute the internal cell in the main thread.
         output_queue = self.get_scalable_cell_deployment().get_output_queue()
-        queue_idx = output_queue.acquire_queue_index()      # TODO may raise exceptions
+        queue_idx = output_queue.acquire_queue_index()
 
         internal_cell = self.get_internal_cell()
         internal_cell.pull()
@@ -62,6 +79,3 @@ class NoScalingStrategy(AScalingStrategy):
 
     def remove_clone(self, method: Type["ICloneCell"]) -> None:
         raise ScalingNotSupportedException(f"Scalable cell strategy 'NoScalingStrategy' doesn't allow scaling down.")
-
-    def assert_is_valid(self) -> None:
-        return

@@ -124,54 +124,22 @@ class ACloneCell(ACompositeCell, ICloneCell):
 
     @classmethod
     def create(cls, original_cell: "ICell", name: str) -> "ACloneCell":
-        """
-        Factory method to create a new clone.
-
-        Args:
-            original_cell: the original cell to be cloned.
-            name: the name of the new clone cell.
-        Returns:
-            A new clone cell.
-        Raises:
-            InvalidInputException
-            NotImplementedError: if the original cell doesn't support cloning.
-        """
         raise NotImplementedError
 
     # ------ Original cell ------
 
     def has_as_observable(self, observable: "IObservable") -> bool:
-        """
-        Args:
-            observable: an observable object.
-        Returns:
-            True if this observer is observing the given observable.
-        """
         return super(ACloneCell, self).has_as_observable(observable) or self.get_original_cell() == observable
 
     def get_original_cell(self) -> "ICell":
-        """
-        Returns:
-            The original cell, of which this cell is a clone.
-        """
         return self.__original_cell
 
     def can_have_as_original_cell(self, original_cell: "ICell") -> "BoolExplained":
-        """
-        Args:
-            original_cell: original cell to validate.
-        Returns:
-            TrueExplained if the given cell is a valid original cell for this clone cell. FalseExplained otherwise.
-        """
         if not isinstance(original_cell, ICell):
             return FalseExplained(f"{self}: original cell should be of type ICell, got {type(original_cell)}. ")
         return TrueExplained()
 
     def assert_has_proper_original_cell(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if the original cell is invalid.
-        """
         raise_if_not(self.can_have_as_original_cell(self.get_original_cell()), InvalidStateException)
         if not self.get_original_cell().has_as_observer(self):
             raise InvalidStateException(f"Inconsistent relation: {self.get_original_cell()} doesn't have {self} "
@@ -180,42 +148,18 @@ class ACloneCell(ACompositeCell, ICloneCell):
     # ------ Inputs & Outputs ------
 
     def get_clone_inputs(self) -> Sequence[CloneInput]:
-        """
-        Returns:
-            The (internal) clone inputs of this clone cell.
-        """
         return [input_ for input_ in self.get_inputs() if isinstance(input_, CloneInput)]
 
     def get_clone_input(self, name: str) -> CloneInput:
-        """
-        Args:
-            name: the name of the clone input to get.
-        Returns:
-            The (internal) clone input with the given name.
-        Raises:
-             KeyError: if this cell has no clone input with the given name.
-        """
         result: IInput = self.get_input(name)
         if not isinstance(result, CloneInput):
             raise KeyError
         return result
 
     def get_clone_outputs(self) -> Sequence[CloneOutput]:
-        """
-        Returns:
-            The (internal) clone outputs of this clone cell.
-        """
         return [output for output in self.get_outputs() if isinstance(output, CloneOutput)]
 
     def get_clone_output(self, name: str) -> CloneOutput:
-        """
-        Args:
-            name: the name of the clone output to get.
-        Returns:
-            The (internal) clone output with the given name.
-        Raises:
-             KeyError: if this cell has no clone output with the given name.
-        """
         result: IOutput = self.get_output(name)
         if not isinstance(result, CloneOutput):
             raise KeyError
@@ -224,18 +168,6 @@ class ACloneCell(ACompositeCell, ICloneCell):
     # ------ Other methods ------
 
     def _on_pull(self) -> None:
-        """
-        Override this method to add functionality that must happen when pulling the cell.
-
-        During a pull, a cell must pull its inputs, execute it's functionality and set its outputs.
-
-        Raises:
-            Exception: any exception that the user may raise when overriding _on_pull.
-
-        Won't raise:
-            NotDeployedException: this method will only be called when the cell is already deployed.
-            IndeterminableTopologyException: this method will only be called when the cell is already deployed.
-        """
         raise NotImplementedError
 
     def clone(self, new_parent: "Optional[ICompositeCell]") -> "ICloneCell":
@@ -248,20 +180,10 @@ class ACloneCell(ACompositeCell, ICloneCell):
         raise Exception("A clone has no knowledge of the number of times it can be pulled.")
 
     def assert_is_valid(self) -> None:
-        """
-        Raises:
-            InvalidStateException
-        """
         super(ACloneCell, self).assert_is_valid()
         self.assert_has_proper_original_cell()
 
     def delete(self) -> None:
-        """
-        Deletes this cell, and all its internals.
-
-        Raises:
-            CannotBeDeletedException
-        """
         raise_if_not(self.can_be_deleted(), CannotBeDeletedException)
         # Main mutator in the IObserver-IObservable relation, as observer of the original cell.
         self.__original_cell._remove_observer(self)

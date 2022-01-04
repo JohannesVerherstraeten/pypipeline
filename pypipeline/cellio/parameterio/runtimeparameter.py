@@ -47,11 +47,23 @@ class RuntimeParameter(Input[T], Generic[T]):
                  cell: "ICell",
                  name: str,
                  validation_fn: Optional[Callable[[T], bool]] = None):
+        """
+        Args:
+            cell: the cell of which this IO will be part.
+            name: the name of this IO. Should be unique within the cell.
+            validation_fn: An optional validation function that will be used to validate every value that passes
+                through this IO.
+        """
         super(RuntimeParameter, self).__init__(cell, name, validation_fn)
         self.__default_value: T = None   # type: ignore
         self.__default_value_is_set: bool = False
 
     def set_default_value(self, value: T) -> None:
+        """
+        Args:
+            value: the new default value for this runtime parameter. This value will be used when pulling the runtime
+                parameter if no incoming connection is available.
+        """
         if not self.can_have_as_value(value):
             raise InvalidInputException(f"{self}: Invalid value: {value}")
         with self._get_state_lock():
@@ -62,21 +74,38 @@ class RuntimeParameter(Input[T], Generic[T]):
         self.get_cell().notify_observers(event)
 
     def get_default_value(self) -> T:
+        """
+        Returns:
+            The default value of this runtime parameter. This value will be used when pulling the runtime
+                parameter if no incoming connection is available.
+        """
         with self._get_state_lock():
             if not self.__default_value_is_set:
-                return NoInputProvidedException(f"{self}.get_default_value() called, but default value has not yet "
-                                                f"been set.")
+                raise NoInputProvidedException(f"{self}.get_default_value() called, but default value has not yet "
+                                               f"been set.")
             return self.__default_value
 
     def default_value_is_set(self) -> bool:
+        """
+        Returns:
+            True if a default value is provided for this runtime parameter, False otherwise.
+        """
         with self._get_state_lock():
             return self.__default_value_is_set
 
     def _clear_default_value(self) -> None:
+        """
+        Returns:
+            Clears the currently configured default value.
+        """
         with self._get_state_lock():
             self.__default_value_is_set = False
 
     def assert_has_proper_default_value(self) -> None:
+        """
+        Raises:
+            InvalidStateException: if the configured default value is invalid.
+        """
         if self.default_value_is_set() and not self.can_have_as_value(self.get_default_value()):
             raise InvalidStateException(f"{self} has an invalid default value: {self.get_default_value()}")
 
@@ -98,10 +127,7 @@ class RuntimeParameter(Input[T], Generic[T]):
         self.set_default_value(value)
 
     def is_provided(self) -> bool:
-        if super(RuntimeParameter, self).is_provided():
-            return True
-        else:
-            return self.default_value_is_set()
+        return super(RuntimeParameter, self).is_provided() or self.default_value_is_set()
 
     def _is_optional_even_when_typing_says_otherwise(self) -> bool:
         return True    # A RuntimeParameter can handle None values being set: it will return the default value instead

@@ -15,7 +15,7 @@
 
 from typing import TypeVar, Generic, Optional, TYPE_CHECKING, Sequence, Callable
 
-from pypipeline.cellio.ainput import AInput
+from pypipeline.cellio.acellio.ainput import AInput
 from pypipeline.cellio.icellio import IConnectionEntryPoint, IConnectionExitPoint
 from pypipeline.cellio.connectionendpoint import ConnectionEntryPoint
 from pypipeline.exceptions import UnconnectedException
@@ -45,6 +45,13 @@ class Input(AInput[T], IConnectionEntryPoint[T], Generic[T]):
     """
 
     def __init__(self, cell: "ICell", name: str, validation_fn: Optional[Callable[[T], bool]] = None):
+        """
+        Args:
+            cell: the cell of which this IO will be part.
+            name: the name of this IO. Should be unique within the cell.
+            validation_fn: An optional validation function that will be used to validate every value that passes
+                through this IO.
+        """
         super(Input, self).__init__(cell, name, validation_fn)
         self.__entry_point: ConnectionEntryPoint[T] = ConnectionEntryPoint(self, max_incoming_connections=1)
         self._notify_observers_of_creation()
@@ -70,54 +77,18 @@ class Input(AInput[T], IConnectionEntryPoint[T], Generic[T]):
         return 0
 
     def get_incoming_connections(self) -> "Sequence[IConnection[T]]":
-        """
-        Returns:
-            The incoming connections of this Input.
-        """
         return self.__entry_point.get_incoming_connections()
 
     def can_have_as_incoming_connection(self, connection: "IConnection[T]") -> BoolExplained:
-        """
-        Args:
-            connection: connection to validate.
-        Returns:
-            TrueExplained if the given connection is a valid incoming connection for this Input.
-            FalseExplained otherwise.
-        """
         return self.__entry_point.can_have_as_incoming_connection(connection)
 
     def can_have_as_nb_incoming_connections(self, number_of_incoming_connections: int) -> BoolExplained:
-        """
-        Args:
-            number_of_incoming_connections: the number of incoming connections to validate.
-        Returns:
-            TrueExplained if the given number is a valid number of incoming connection for this Input.
-            FalseExplained otherwise.
-        """
         return self.__entry_point.can_have_as_nb_incoming_connections(number_of_incoming_connections)
 
     def _add_incoming_connection(self, connection: "IConnection[T]") -> None:
-        """
-        Auxiliary mutator in the IConnection-IConnectionEntryPoint relation, as the target of the connection.
-        -> Should only be used by an IConnection, when registering itself as incoming connection.
-
-        Args:
-            connection: the connection to add as incoming connection.
-        Raises:
-            InvalidInputException
-        """
         self.__entry_point._add_incoming_connection(connection)     # access to protected method on purpose
 
     def _remove_incoming_connection(self, connection: "IConnection[T]") -> None:
-        """
-        Auxiliary mutator in the IConnection-IConnectionEntryPoint relation, as the target of the connection.
-        -> Should only be used by an IConnection, when unregistering itself as incoming connection.
-
-        Args:
-            connection: the connection to remove as incoming connection.
-        Raises:
-            InvalidInputException
-        """
         self.__entry_point._remove_incoming_connection(connection)  # access to protected method on purpose
 
     def has_as_incoming_connection(self, connection: "IConnection[T]") -> bool:
@@ -136,10 +107,6 @@ class Input(AInput[T], IConnectionEntryPoint[T], Generic[T]):
         return self.__entry_point.get_incoming_connection_with(source)
 
     def assert_has_proper_incoming_connections(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if one or more of the incoming connections is invalid.
-        """
         self.__entry_point.assert_has_proper_incoming_connections()
 
     def _get_connection_entry_point(self) -> ConnectionEntryPoint:
@@ -159,13 +126,5 @@ class Input(AInput[T], IConnectionEntryPoint[T], Generic[T]):
         self.__entry_point.assert_is_valid()
 
     def delete(self) -> None:
-        """
-        Deletes this IO, and all its internals.
-
-        Main mutator in the IO-ICell relation, as owner of the IO.
-
-        Raises:
-            CannotBeDeletedException
-        """
         super(Input, self).delete()
         self.__entry_point.delete()

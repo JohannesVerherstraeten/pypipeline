@@ -71,7 +71,8 @@ from pypipeline.cell.compositecell.scalablecell.scalablecelldeployment import Sc
 from pypipeline.cell.compositecell.scalablecell.strategy import AScalingStrategy, CloningStrategy
 from pypipeline.cell.compositecell.scalablecell.strategy.cloningstrategy.clonecell import ICloneCell, ThreadCloneCell
 from pypipeline.cellio import OutputPort, InputPort, ConfigParameter
-from pypipeline.exceptions import InvalidStateException
+from pypipeline.exceptions import InvalidStateException, InvalidInputException
+from pypipeline.validation import BoolExplained, TrueExplained, FalseExplained, raise_if_not
 
 if TYPE_CHECKING:
     from pypipeline.cell.icell import ICell
@@ -83,6 +84,13 @@ class ScalableCell(ACompositeCell):
     __CONFIGURED_CLONE_TYPES_KEY: str = "configured_clone_types"
 
     def __init__(self, parent_cell: "Optional[ICompositeCell]", name: str):
+        """
+        Args:
+            parent_cell: the cell in which this cell must be nested.
+            name: name of this cell.
+        Raises:
+            InvalidInputException
+        """
         super(ScalableCell, self).__init__(parent_cell, max_nb_internal_cells=1, name=name)
         self.__config_queue_capacity: ConfigParameter[int] = ConfigParameter[int](self, "queue_capacity",
                                                                                   self.__can_have_as_queue_capacity)
@@ -91,7 +99,7 @@ class ScalableCell(ACompositeCell):
             ConfigParameter[float](self, "check_quit_interval", self.__can_have_as_check_quit_interval)
         self.__config_check_quit_interval.set_value(2.)
 
-        self.__configured_pull_strategy_type: Type[AScalingStrategy] = CloningStrategy
+        self.__configured_scaling_strategy_type: Type[AScalingStrategy] = CloningStrategy
         self.__configured_clone_types: List[Type[ICloneCell]] = []
 
         self.__deployment: Optional[ScalableCellDeployment] = None
@@ -100,120 +108,268 @@ class ScalableCell(ACompositeCell):
 
     @property
     def config_queue_capacity(self) -> ConfigParameter[int]:
+        """
+        Returns:
+            The configuration parameter for the output queue capacity of this scalable cell.
+        """
         return self.__config_queue_capacity
 
-    def __can_have_as_queue_capacity(self, queue_capacity: int) -> bool:
-        return 1 <= queue_capacity
+    @staticmethod
+    def __can_have_as_queue_capacity(queue_capacity: int) -> bool:
+        """
+        Args:
+            queue_capacity: the queue capacity value to validate.
+        Returns:
+            True if the given value is a valid queue capacity.
+        """
+        return isinstance(queue_capacity, int) and 1 <= queue_capacity
 
     @property
-    def config_check_quit_interval(self) -> ConfigParameter[float]:     # TODO check wether can be replaced by PULL_TIMOUT
+    def config_check_quit_interval(self) -> ConfigParameter[float]:
+        """
+        Returns:
+            The configuration parameter for the interval in which the clone threads, when requesting new inputs,
+            will halt their request and check whether they are requested to quit.
+        """
         return self.__config_check_quit_interval
 
-    def __can_have_as_check_quit_interval(self, interval: float) -> bool:
-        return 0 < interval
+    @staticmethod
+    def __can_have_as_check_quit_interval(interval: float) -> bool:
+        """
+        Args:
+            interval: the interval to validate.
+        Returns:
+            True if the given value is a valid interval.
+        """
+        return isinstance(interval, (int, float)) and 0 < interval
 
     # ------ Some easier accessors ------
 
     def get_internal_cell(self) -> "Optional[ICell]":
-        internal_cell_list = list(self.get_internal_cells())
+        """
+        Returns:
+            The internal cell of this scalable cell, if available.
+        """
+        internal_cell_list = self.get_internal_cells()
         if len(internal_cell_list) == 0:
             return None
         return internal_cell_list[0]
 
     def get_input_ports(self) -> Sequence[InputPort]:
+        """
+        Returns:
+            All input ports of this scalable cell.
+        """
         return [input_ for input_ in self.get_inputs() if isinstance(input_, InputPort)]
 
     def get_output_ports(self) -> Sequence[OutputPort]:
+        """
+        Returns:
+            All output ports of this scalable cell.
+        """
         return [output for output in self.get_outputs() if isinstance(output, OutputPort)]
 
     # ------ Scaling strategy type ------
 
     def get_scaling_strategy_type(self) -> Type[AScalingStrategy]:
-        return self.__configured_pull_strategy_type
+        """
+        Returns:
+            The scaling strategy type of this scalable cell.
+        """
+        return self.__configured_scaling_strategy_type
 
-    def set_scaling_strategy_type(self, pull_strategy: Type[AScalingStrategy]) -> None:
-        assert self.can_have_as_scaling_strategy_type(pull_strategy)
-        if self.__configured_pull_strategy_type == pull_strategy:
+    def set_scaling_strategy_type(self, scaling_strategy: Type[AScalingStrategy]) -> None:
+        """
+        TODO what happens when switching the scaling strategy from CloningStrategy to NoScalingStrategy when
+            some clone_types are still configured?
+        Args:
+            scaling_strategy: the new scaling strategy to use.
+        Raises:
+            InvalidInputException: if the given value is not a valid scaling strategy.
+        """
+        raise_if_not(self.can_have_as_scaling_strategy_type(scaling_strategy), InvalidInputException, f"{self}: ")
+        if not self.can_have_as_scaling_strategy_type(scaling_strategy):
+            raise InvalidInputException(f"{self} cannot have {scaling_strategy} as pull strategy. "
+                                        f"Expected a subclass of type AScalingStrategy.")
+        if self.__configured_scaling_strategy_type == scaling_strategy:
             return
-        self.__configured_pull_strategy_type = pull_strategy
+        self.__configured_scaling_strategy_type = scaling_strategy
         event = ScalingStrategyUpdateEvent(self)
         self.notify_observers(event)
         deployment = self._get_deployment()
         if deployment is not None:
-            deployment.switch_scaling_strategy(pull_strategy)    # access to protected method on purpose
+            deployment.switch_scaling_strategy(scaling_strategy)    # access to protected method on purpose
 
-    def can_have_as_scaling_strategy_type(self, pull_strategy: Type[AScalingStrategy]) -> bool:
-        if not issubclass(pull_strategy, AScalingStrategy):
-            return False
-        return True
+    def can_have_as_scaling_strategy_type(self, scaling_strategy: Type[AScalingStrategy]) -> BoolExplained:
+        """
+        Args:
+            scaling_strategy: scaling strategy to validate.
+        Returns:
+            TrueExplained if the given value is a valid scaling strategy, FalseExplained otherwise.
+        """
+        if not issubclass(scaling_strategy, AScalingStrategy):
+            return FalseExplained(f"Expected scaling strategy type to be a subtype of AScalingStrategy, "
+                                  f"got {scaling_strategy}.")
+        return TrueExplained()
 
-    def has_proper_scaling_strategy_type(self) -> bool:
-        if not self.can_have_as_scaling_strategy_type(self.get_scaling_strategy_type()):
-            return False
-        return True
+    def assert_has_proper_scaling_strategy_type(self) -> None:
+        """
+        Raises:
+            InvalidStateException: if the scaling strategy type of this scalable cell is invalid.
+        """
+        raise_if_not(self.can_have_as_scaling_strategy_type(self.get_scaling_strategy_type()), InvalidStateException,
+                     f"{self}: ")
 
     # ------ Clone types ------
 
     def get_all_clone_types(self) -> Sequence[Type[ICloneCell]]:
+        """
+        Returns:
+            The clone types this scalable cell has been scaled-up with.
+        """
         return tuple(self.__configured_clone_types)       # wrapping in a new tuple is needed for decoupling!
 
     def __add_clone_type(self, clone_type: Type[ICloneCell]) -> None:
-        assert self.__can_have_as_clone_type(clone_type)
+        """
+        Adds the given clone type to this scalable cell. If this scalable cell is deployed, it will create
+        the clone immediately.
+
+        Args:
+            clone_type: the clone type to add.
+        Raises:
+            InvalidInputException: if the given clone_type is not a valid clone type.
+            ScalingNotSupportedException: if the strategy of the scalable cell doesn't allow scaling.
+        """
+        raise_if_not(self.can_have_as_clone_type(clone_type), InvalidInputException, f"{self}: ")
         self.__configured_clone_types.append(clone_type)
         event = CloneTypeUpdateEvent(self)
         self.notify_observers(event)
         deployment = self._get_deployment()
         if deployment is not None:
-            deployment.scale_one_up(clone_type)     # TODO may raise exceptions
+            deployment.scale_one_up(clone_type)
 
     def __remove_clone_type(self, clone_type: Type[ICloneCell]) -> None:
-        assert self.__has_as_clone_type(clone_type)
+        """
+        Removes the given clone type from this scalable cell. If this scalable cell is deployed, it will delete
+        the clone immediately.
+
+        Args:
+            clone_type: the clone type to remove.
+        Raises:
+            InvalidInputException: if this scalable cell doesn't have the given clone type available.
+            ScalingNotSupportedException: if the strategy of the scalable cell doesn't allow scaling.
+        """
+        if not self.has_as_clone_type(clone_type):
+            raise InvalidInputException(f"{self} doesn't have {clone_type} as clone type.")
         self.__configured_clone_types.remove(clone_type)
         event = CloneTypeUpdateEvent(self)
         self.notify_observers(event)
         deployment = self._get_deployment()
         if deployment is not None:
-            deployment.scale_one_down(clone_type)       # TODO may raise exceptions
+            deployment.scale_one_down(clone_type)
 
-    def __can_have_as_clone_type(self, clone_type: Type[ICloneCell]) -> bool:
-        return issubclass(clone_type, ICloneCell)
+    def can_have_as_clone_type(self, clone_type: Type[ICloneCell]) -> BoolExplained:
+        """
+        Args:
+            clone_type: the clone type to validate.
+        Returns:
+            TrueExplained if the given value is a valid clone type for this scalable cell.
+        """
+        if not issubclass(clone_type, ICloneCell):
+            return FalseExplained(f"Expected the clone type to be a subclass of ICloneCell, got {clone_type}")
+        return TrueExplained()
 
-    def __has_as_clone_type(self, clone_type: Type[ICloneCell]) -> bool:
+    def has_as_clone_type(self, clone_type: Type[ICloneCell]) -> bool:
+        """
+        Args:
+            clone_type: a clone type.
+        Returns:
+            True if this scalable cell has at least one clone type of the given type.
+        """
         return clone_type in self.__configured_clone_types
 
     def get_nb_clone_types(self) -> int:
+        """
+        Returns:
+            The total number of clone types that are configured on this cell.
+        """
         return len(self.__configured_clone_types)
 
     def get_nb_clone_types_by_type(self) -> Dict[Type[ICloneCell], int]:
+        """
+        Returns:
+            The number of clone types that are configured on this cell, ordered by clone type.
+        """
         nb_clone_types_by_type: Dict[Type[ICloneCell], int] = {}
         for clone_type in self.get_all_clone_types():
             nb_clone_types_by_type[clone_type] = nb_clone_types_by_type.get(clone_type, 0) + 1
         return nb_clone_types_by_type
 
-    def has_proper_clone_types(self) -> bool:
+    def assert_has_proper_clone_types(self) -> None:
+        """
+        Raises:
+            InvalidStateException: if one of the clone types of this scalable cell is invalid.
+        """
         for clone_type in self.get_all_clone_types():
-            if not self.__can_have_as_clone_type(clone_type):
-                return False
-        return True
+            raise_if_not(self.can_have_as_clone_type(clone_type), InvalidStateException, f"{self}: ")
 
     # ------ Scaling ------
 
     def scale_up(self, times: int = 1, method: Type[ICloneCell] = ThreadCloneCell) -> None:
+        """
+        Scale up this scalable cell by creating multiple clones of the internal cell.
+
+        If this cell already has clones available, the new ones are just added.
+
+        Args:
+            times: how many extra clones should be generated.
+            method: the method in which to create the clones, also called clone_type.
+        Raises:
+            InvalidInputException
+            ScalingNotSupportedException: if the strategy of this scalable cell doesn't allow scaling.
+        """
         if times < 0:
-            raise ValueError(f"The number of times a scalablecell is scaled up cannot be negative, got {times}")
+            raise InvalidInputException(f"{self}: the number of times a scalable cell is scaled up cannot be negative, "
+                                        f"got {times}")
         for i in range(times):
             self.logger.info(f"{self}: scaling up {i+1} of {times}")
             self.scale_one_up(method)
 
     def scale_one_up(self, method: Type[ICloneCell] = ThreadCloneCell) -> None:
+        """
+        Scale up this scalable cell by creating one extra clone of the internal cell.
+
+        If this cell already has clones available, the new one is just added.
+
+        Args:
+            method: the method in which to create the clones, also called clone_type.
+        Raises:
+            InvalidInputException
+            ScalingNotSupportedException: if the strategy of this scalable cell doesn't allow scaling.
+        """
         # TODO test whether internal cell allows cloning/scaling up
         # TODO assert internal cell has no recurrent connections
         self.__add_clone_type(method)
 
     def scale_one_down(self, method: Type[ICloneCell] = ThreadCloneCell) -> None:
+        """
+        Scale down this scalable cell by removing a clone of the given type.
+
+        Args:
+            method: the clone_type of which to remove a clone.
+        Raises:
+            InvalidInputException
+            ScalingNotSupportedException: if the strategy of this scalable cell doesn't allow scaling.
+        """
         self.__remove_clone_type(method)
 
     def scale_all_down(self) -> None:
+        """
+        Scale down this scalable cell by removing all its clones.
+
+        Raises:
+            ScalingNotSupportedException: if the strategy of this scalable cell doesn't allow scaling.
+        """
         clone_types_to_scale_down = self.get_all_clone_types()
         for i, clone_type in enumerate(clone_types_to_scale_down):
             self.logger.info(f"Scaling down {i+1} of {len(clone_types_to_scale_down)}...")
@@ -222,33 +378,60 @@ class ScalableCell(ACompositeCell):
     # ------ Deployment ------
 
     def _get_deployment(self) -> Optional[ScalableCellDeployment]:
+        """
+        Returns:
+            The deployment context of this scalable cell.
+        """
         return self.__deployment
 
-    def _can_have_as_deployment(self, deployment: Optional[ScalableCellDeployment]) -> bool:
-        if deployment is None:
-            return True
-        # return isinstance(deployment, pypipeline.cell.compositecell.scalablecell.scalablecelldeployment)
-        return True
+    def _can_have_as_deployment(self, deployment: Optional[ScalableCellDeployment]) -> BoolExplained:
+        """
+        Args:
+            deployment: an optional deployment object.
+        Returns:
+            True if the given deployment object is a valid deployment for this scalable cell.
+        """
+        if deployment is not None and not isinstance(deployment, ScalableCellDeployment):
+            return FalseExplained(f"{self}: expected deployment of type ScalableCellDeployment, got {deployment}.")
+        return TrueExplained()
 
     def _set_deployment(self, deployment: Optional[ScalableCellDeployment]) -> None:
-        if not self._can_have_as_deployment(deployment):
-            raise Exception()
+        """
+        Should only be used by the constructor / destructor of the ScalableCellDeployment class.
+        Args:
+            deployment: the deployment object to set.
+        """
+        raise_if_not(self._can_have_as_deployment(deployment), InvalidInputException)
         self.__deployment = deployment
 
     def _on_deploy(self) -> None:
         super(ACompositeCell, self)._on_deploy()    # Skip the internal cell deployment
-        ScalableCellDeployment(self)               # Sets itself as self.__deployment   # TODO may raise exceptions
+        ScalableCellDeployment(self)                # Sets itself as self.__deployment
 
     def _on_undeploy(self) -> None:
         super(ACompositeCell, self)._on_undeploy()  # Skip the internal cell undeployment
-        self.__deployment.delete()              # removes itself as self.__deployment
+        self.__deployment.delete()                  # removes itself as self.__deployment
+
+    def assert_has_proper_deployment(self) -> None:
+        """
+        Raises:
+            InvalidStateException: if the deployment of this scalable cell is invalid.
+        """
+        deployment = self._get_deployment()
+        raise_if_not(self._can_have_as_deployment(self._get_deployment()), InvalidStateException)
+        if self.is_deployed() and deployment is None:
+            raise InvalidStateException(f"{self} is deployed, but doesn't have a deployment attribute.")
+        if not self.is_deployed() and deployment is not None:
+            raise InvalidStateException(f"{self} is not deployed, but has a deployment attribute.")
+        if deployment is not None:
+            deployment.assert_is_valid()
 
     # ------ Pulling ------
 
     def _on_pull(self) -> None:
         deployment = self._get_deployment()
         assert deployment is not None
-        deployment._on_pull()                   # TODO may raise exceptions
+        deployment._on_pull()
 
     def _on_reset(self) -> None:
         deployment = self._get_deployment()
@@ -272,8 +455,8 @@ class ScalableCell(ACompositeCell):
             assert self.__CONFIGURED_SCALING_STRATEGY_TYPE_KEY in state
             assert self.__CONFIGURED_CLONE_TYPES_KEY in state
 
-            pull_strategy = state[self.__CONFIGURED_SCALING_STRATEGY_TYPE_KEY]
-            self.set_scaling_strategy_type(pull_strategy)
+            scaling_strategy = state[self.__CONFIGURED_SCALING_STRATEGY_TYPE_KEY]
+            self.set_scaling_strategy_type(scaling_strategy)
 
             # number of clones
             target_configured_clone_types: Dict[Type[ICloneCell], int] = state[self.__CONFIGURED_CLONE_TYPES_KEY]
@@ -293,17 +476,9 @@ class ScalableCell(ACompositeCell):
 
     def assert_is_valid(self) -> None:
         super(ScalableCell, self).assert_is_valid()
-        if not self.has_proper_scaling_strategy_type():
-            raise InvalidStateException()   # TODO
-        if not self.has_proper_clone_types():
-            raise InvalidStateException()   # TODO
-        if self.is_deployed():
-            deployment = self._get_deployment()
-            if deployment is None:
-                raise InvalidStateException()   # TODO
-            deployment.assert_is_valid()
-        elif self._get_deployment() is not None:
-            raise InvalidStateException()       # TODO
+        self.assert_has_proper_scaling_strategy_type()
+        self.assert_has_proper_clone_types()
+        self.assert_has_proper_deployment()
 
     # ------ Pickling ------
 

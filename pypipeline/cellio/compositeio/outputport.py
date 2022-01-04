@@ -16,7 +16,7 @@
 from typing import TypeVar, Generic, TYPE_CHECKING, Sequence, Optional
 
 import pypipeline
-from pypipeline.cellio.aoutput import AOutput
+from pypipeline.cellio.acellio.aoutput import AOutput
 from pypipeline.cellio.icellio import IConnectionEntryPoint, IConnectionExitPoint
 from pypipeline.cellio.connectionendpoint import ConnectionExitPoint, ConnectionEntryPoint, RecurrentConnectionExitPoint
 from pypipeline.validation import BoolExplained, FalseExplained, TrueExplained
@@ -51,6 +51,13 @@ class OutputPort(AOutput[T], IConnectionExitPoint[T], IConnectionEntryPoint[T], 
     """
 
     def __init__(self, cell: "ICompositeCell", name: str, initial_value: Optional[T] = None):
+        """
+        Args:
+            cell: the cell of which this IO will be part.
+            name: the name of this IO. Should be unique within the cell.
+            initial_value: an optional initial value, which allows recurrent connections to be made from this
+                output port.
+        """
         super(OutputPort, self).__init__(cell, name)
         self.__entry_point: ConnectionEntryPoint[T] = ConnectionEntryPoint(self, max_incoming_connections=1)
         self.__exit_point: RecurrentConnectionExitPoint[T] = RecurrentConnectionExitPoint(self,
@@ -79,54 +86,18 @@ class OutputPort(AOutput[T], IConnectionExitPoint[T], IConnectionEntryPoint[T], 
         return self.__exit_point._notify_new_value()
 
     def get_incoming_connections(self) -> "Sequence[IConnection[T]]":
-        """
-        Returns:
-            The incoming connections of this output port.
-        """
         return self.__entry_point.get_incoming_connections()
 
     def can_have_as_incoming_connection(self, connection: "IConnection[T]") -> BoolExplained:
-        """
-        Args:
-            connection: connection to validate.
-        Returns:
-            TrueExplained if the given connection is a valid incoming connection for this output port.
-            FalseExplained otherwise.
-        """
         return self.__entry_point.can_have_as_incoming_connection(connection)
 
     def can_have_as_nb_incoming_connections(self, number_of_incoming_connections: int) -> BoolExplained:
-        """
-        Args:
-            number_of_incoming_connections: the number of incoming connections to validate.
-        Returns:
-            TrueExplained if the given number is a valid number of incoming connection for this output port.
-            FalseExplained otherwise.
-        """
         return self.__entry_point.can_have_as_nb_incoming_connections(number_of_incoming_connections)
 
     def _add_incoming_connection(self, connection: "IConnection[T]") -> None:
-        """
-        Auxiliary mutator in the IConnection-IConnectionEntryPoint relation, as the target of the connection.
-        -> Should only be used by an IConnection, when registering itself as incoming connection.
-
-        Args:
-            connection: the connection to add as incoming connection.
-        Raises:
-            InvalidInputException
-        """
         self.__entry_point._add_incoming_connection(connection)
 
     def _remove_incoming_connection(self, connection: "IConnection[T]") -> None:
-        """
-        Auxiliary mutator in the IConnection-IConnectionEntryPoint relation, as the target of the connection.
-        -> Should only be used by an IConnection, when unregistering itself as incoming connection.
-
-        Args:
-            connection: the connection to remove as incoming connection.
-        Raises:
-            InvalidInputException
-        """
         self.__entry_point._remove_incoming_connection(connection)
 
     def has_as_incoming_connection(self, connection: "IConnection[T]") -> bool:
@@ -145,10 +116,6 @@ class OutputPort(AOutput[T], IConnectionExitPoint[T], IConnectionEntryPoint[T], 
         return self.__entry_point.get_incoming_connection_with(source)
 
     def assert_has_proper_incoming_connections(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if one or more of the incoming connections is invalid.
-        """
         self.__entry_point.assert_has_proper_incoming_connections()
 
     def pull_as_connection(self, connection: "IConnection[T]") -> T:
@@ -161,55 +128,19 @@ class OutputPort(AOutput[T], IConnectionExitPoint[T], IConnectionEntryPoint[T], 
         return self.__exit_point.has_seen_value(connection)
 
     def get_outgoing_connections(self) -> "Sequence[IConnection[T]]":
-        """
-        Returns:
-            The outgoing connections of this output port.
-        """
         return self.__exit_point.get_outgoing_connections()
 
     @classmethod
     def can_have_as_outgoing_connection(cls, connection: "IConnection[T]") -> BoolExplained:
-        """
-        Args:
-            connection: connection to validate.
-        Returns:
-            TrueExplained if the given connection is a valid outgoing connection for this connection exit point.
-            FalseExplained otherwise.
-        """
         return ConnectionExitPoint.can_have_as_outgoing_connection(connection)
 
     def can_have_as_nb_outgoing_connections(self, number_of_outgoing_connections: int) -> BoolExplained:
-        """
-        Args:
-            number_of_outgoing_connections: the number of outgoing connections to validate.
-        Returns:
-            TrueExplained if the given number is a valid number of outgoing connection for this output port.
-            FalseExplained otherwise.
-        """
         return self.__exit_point.can_have_as_nb_outgoing_connections(number_of_outgoing_connections)
 
     def _add_outgoing_connection(self, connection: "IConnection[T]") -> None:
-        """
-        Auxiliary mutator in the IConnection-IConnectionExitPoint relation, as the source of the connection.
-        -> Should only be used by an IConnection, when registering itself as outgoing connection.
-
-        Args:
-            connection: the connection to add as outgoing connection.
-        Raises:
-            InvalidInputException
-        """
         self.__exit_point._add_outgoing_connection(connection)
 
     def _remove_outgoing_connection(self, connection: "IConnection[T]") -> None:
-        """
-        Auxiliary mutator in the IConnection-IConnectionExitPoint relation, as the source of the connection.
-        -> Should only be used by an IConnection, when unregistering itself as outgoing connection.
-
-        Args:
-            connection: the connection to remove as outgoing connection.
-        Raises:
-            InvalidInputException
-        """
         self.__exit_point._remove_outgoing_connection(connection)
 
     def get_max_nb_outgoing_connections(self) -> int:
@@ -228,10 +159,6 @@ class OutputPort(AOutput[T], IConnectionExitPoint[T], IConnectionEntryPoint[T], 
         return self.__exit_point.get_outgoing_connection_to(target)
 
     def assert_has_proper_outgoing_connections(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if one or more of the outgoing connections is invalid.
-        """
         self.__exit_point.assert_has_proper_outgoing_connections()
 
     def has_initial_value(self) -> bool:
@@ -252,14 +179,6 @@ class OutputPort(AOutput[T], IConnectionExitPoint[T], IConnectionEntryPoint[T], 
         self.__exit_point.assert_is_valid()
 
     def delete(self) -> None:
-        """
-        Deletes this IO, and all its internals.
-
-        Main mutator in the IO-ICell relation, as owner of the IO.
-
-        Raises:
-            CannotBeDeletedException
-        """
         super(OutputPort, self).delete()
         self.__entry_point.delete()
         self.__exit_point.delete()

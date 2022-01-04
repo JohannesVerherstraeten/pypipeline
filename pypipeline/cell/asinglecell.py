@@ -102,13 +102,13 @@ class ASingleCell(ACell):
 
     def supports_scaling(self) -> bool:
         """
-        Override this method to indicate that the cell supports scaling up multiple times.
+        Override this method to indicate that the cell supports scaling up more than once.
 
-        A cell support scaling if it supports multiple clones of it running in parallel.
-        This should usually be False for stateful cells.
+        A cell support scaling if it supports multiple clones of it running in parallel. This should usually be False
+        for stateful cells.
 
         Returns:
-            True if this cell supports scaling. False otherwise.
+            True if this cell supports being scaled up more than once. False otherwise.
         """
         raise NotImplementedError
 

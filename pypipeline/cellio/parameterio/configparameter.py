@@ -16,7 +16,7 @@
 from typing import TypeVar, Generic, TYPE_CHECKING, Dict, Any, Optional, Sequence, Callable
 
 from pypipeline.cell.icellobserver import ParameterUpdateEvent
-from pypipeline.cellio.ainput import AInput
+from pypipeline.cellio.acellio.ainput import AInput
 
 if TYPE_CHECKING:
     from pypipeline.cell import ICell
@@ -34,6 +34,13 @@ class ConfigParameter(AInput[T], Generic[T]):
     __VALUE_KEY: str = "value"
 
     def __init__(self, cell: "ICell", name: str, validation_fn: Optional[Callable[[T], bool]] = None):
+        """
+        Args:
+            cell: the cell of which this IO will be part.
+            name: the name of this IO. Should be unique within the cell.
+            validation_fn: An optional validation function that will be used to validate every value that passes
+                through this IO.
+        """
         super(ConfigParameter, self).__init__(cell, name, validation_fn)
         self._notify_observers_of_creation()
 
@@ -41,6 +48,10 @@ class ConfigParameter(AInput[T], Generic[T]):
         return self.get_value()
 
     def set_value(self, value: T) -> None:
+        """
+        Args:
+            value: the new value for this configuration parameter.
+        """
         super(ConfigParameter, self)._set_value(value)
         event = ParameterUpdateEvent(self.get_cell())       # TODO avoid indirection of cell
         self.get_cell().notify_observers(event)

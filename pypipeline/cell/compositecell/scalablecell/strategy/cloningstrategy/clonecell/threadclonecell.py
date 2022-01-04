@@ -60,78 +60,21 @@ class ThreadCloneCell(ACloneCell):
 
     @classmethod
     def create(cls, original_cell: "ICell", name: str) -> "ThreadCloneCell":
-        """
-        Factory method to create a new clone.
-
-        Args:
-            original_cell: the original cell to be cloned.
-            name: the name of the new clone cell.
-        Returns:
-            A new clone cell.
-        Raises:
-            InvalidInputException
-            NotImplementedError: if the original cell doesn't support cloning.
-        """
         return ThreadCloneCell(original_cell, name)
 
     def _on_pull(self) -> None:
-        """
-        Override this method to add functionality that must happen when pulling the cell.
-
-        During a pull, a cell must pull its inputs, execute it's functionality and set its outputs.
-
-        Raises:
-            Exception: any exception that the user may raise when overriding _on_pull.
-
-        Won't raise:
-            NotDeployedException: this method will only be called when the cell is already deployed.
-            IndeterminableTopologyException: this method will only be called when the cell is already deployed.
-        """
         self._original_cell_clone.pull()
 
     def update(self, event: "Event") -> None:
-        """
-        Will be called by the observables of this observer (ex: internal cell).
-
-        What should trigger this update:
-        - a parameter of the observed cell changes,
-
-        Args:
-            event: the event to notify this observer about.
-        """
         super(ThreadCloneCell, self).update(event)
         sync_state = self.get_original_cell()._get_sync_state()
         self._original_cell_clone._set_sync_state(sync_state)
 
     def _on_reset(self) -> None:
-        """
-        Override this method to add functionality that must happen when resetting the cell.
-
-        During a reset, a cell must clear its internal state. This doesn't include cell configuration, but only
-        cell state that was accumulated during consecutive pulls.
-        Ex: reset the dataloader iterator of a dataloader cell.
-        Ex: the currently accumulated batch in a BatchingCell.
-
-        Don't forget to call the _on_reset of the super-class when overriding this method! Ex:
-        ```
-        def _on_reset(self) -> None:
-            super(MyCell, self)._on_reset()
-            # other resetting code
-        ```
-
-        Raises:
-            Exception: any exception that the user may raise when overriding _on_reset.
-        """
         super(ThreadCloneCell, self)._on_reset()
         self._original_cell_clone.reset()
 
     def delete(self) -> None:
-        """
-        Deletes this cell, and all its internals.
-
-        Raises:
-            CannotBeDeletedException
-        """
         raise_if_not(self.can_be_deleted(), CannotBeDeletedException)
         self._original_cell_clone = None        # type: ignore
         super(ThreadCloneCell, self).delete()

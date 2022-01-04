@@ -234,6 +234,13 @@ class ICompositeCell(ICell, IObserver):
     # ------ Topology ------
 
     def get_internal_topology(self) -> "Topology":
+        """
+        Returns:
+            The internal topology of this composite cell: which of the internal cells are sources and/or sinks,
+            and which internal connections are recurrent or not?
+        Raises:
+            IndeterminableTopologyException: if the internal topology could not be determined.
+        """
         raise NotImplementedError
 
     def can_have_as_internal_topology(self, topology: Optional["Topology"]) -> "BoolExplained":

@@ -5,7 +5,7 @@ import logging
 
 import pypipeline
 from pypipeline.cell.compositecell.scalablecell.strategy.cloningstrategy.clonecell import ICloneCell
-from pypipeline.exceptions import NotDeployedException, InactiveException, TimeoutException, NonCriticalException
+from pypipeline.exceptions import TimeoutException, NonCriticalException
 
 if TYPE_CHECKING:
     from pypipeline.cell.compositecell.scalablecell.circularmultiqueue import CircularMultiQueue
@@ -13,6 +13,13 @@ if TYPE_CHECKING:
 
 
 class CloneThread(Thread):
+    """
+    The clone thread class holds all functionality and state of one thread inside a scalable cell.
+
+    A scalable cell manages each of its clones in a separate thread (even Ray clones). This thread pulls the
+    inputs of the scalable cell, pass the inputs to the clones and put the clone results in the scalable
+    cell's output queue.
+    """
 
     def __init__(self,
                  clone: ICloneCell,
@@ -40,6 +47,9 @@ class CloneThread(Thread):
         self.exception: Optional[Exception] = None
 
     def run(self) -> None:
+        """
+        The thread's mainloop.
+        """
         self.logger.info(f"clone worker started")
         while self.is_active.wait():
             self.has_paused.clear()

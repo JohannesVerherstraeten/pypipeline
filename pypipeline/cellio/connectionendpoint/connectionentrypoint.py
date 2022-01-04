@@ -37,12 +37,21 @@ class ConnectionEntryPoint(Generic[T]):
     """
 
     def __init__(self, io: "IConnectionEntryPoint[T]", max_incoming_connections: int = 1):
+        """
+        Args:
+            io: the IO on which to create this connection entry point.
+            max_incoming_connections: the max number of incoming connections that is allowed.
+        """
         self.logger = logging.getLogger(self.__class__.__name__)
         self.__io = io
         self.__max_incoming_connections = max_incoming_connections
         self.__incoming_connections: "List[IConnection[T]]" = []
 
     def get_io(self) -> "IConnectionEntryPoint[T]":
+        """
+        Returns:
+            The IO to which this connection entry point belongs.
+        """
         return self.__io
 
     def get_incoming_connections(self) -> "Sequence[IConnection[T]]":
@@ -85,8 +94,6 @@ class ConnectionEntryPoint(Generic[T]):
 
         Args:
             connection: the connection to add as incoming connection.
-        Raises:
-            InvalidInputException
         """
         raise_if_not(self.can_have_as_incoming_connection(connection), InvalidInputException)
         raise_if_not(self.can_have_as_nb_incoming_connections(self.get_nb_incoming_connections()+1),
@@ -102,29 +109,55 @@ class ConnectionEntryPoint(Generic[T]):
 
         Args:
             connection: the connection to remove as incoming connection.
-        Raises:
-            InvalidInputException
         """
         if not self.has_as_incoming_connection(connection):
             raise InvalidInputException(f"{self} doesn't have {connection} as incoming connection.")
         self.__incoming_connections.remove(connection)
 
     def has_as_incoming_connection(self, connection: "IConnection[T]") -> bool:
+        """
+        Args:
+            connection: a connection
+        Returns:
+            True if this connection entry point has the given connection as incoming connection.
+        """
         return connection in self.__incoming_connections
 
     def get_max_nb_incoming_connections(self) -> int:
+        """
+        Returns:
+            The max number of incoming connections this entrypoint is allowed to have.
+        """
         return self.__max_incoming_connections
 
     def get_nb_incoming_connections(self) -> int:
+        """
+        Returns:
+            The number of incoming connections of this connection entry point.
+        """
         return len(self.__incoming_connections)
 
     def has_incoming_connection_with(self, source: "IConnectionExitPoint[T]") -> bool:
+        """
+        Args:
+            source: a connection exit point.
+        Returns:
+            True if this connection entry point has an incoming connection originating from the given source.
+        """
         for connection in self.get_incoming_connections():
             if connection.get_source() == source:
                 return True
         return False
 
     def get_incoming_connection_with(self, source: "IConnectionExitPoint[T]") -> "IConnection[T]":
+        """
+        Args:
+            source: a connection exit point.
+        Returns:
+            The connection originating from the given source, arriving at this connection entry point.
+        Raises:
+            ValueError: if no incoming connection exists from the given source to this connection entry point.
+        """
         for connection in self.get_incoming_connections():
             if connection.get_source() == source:
                 return connection

@@ -16,7 +16,7 @@
 from typing import TypeVar, Generic, TYPE_CHECKING, Sequence, Optional
 
 import pypipeline
-from pypipeline.cellio.aoutput import AOutput
+from pypipeline.cellio.acellio.aoutput import AOutput
 from pypipeline.cellio.icellio import IConnectionEntryPoint, IConnectionExitPoint
 from pypipeline.cellio.connectionendpoint import ConnectionExitPoint, ConnectionEntryPoint
 from pypipeline.validation import BoolExplained, FalseExplained, TrueExplained
@@ -49,6 +49,11 @@ class InternalOutput(AOutput[T], IConnectionEntryPoint[T], Generic[T]):
     """
 
     def __init__(self, cell: "ICompositeCell", name: str):
+        """
+        Args:
+            cell: the cell of which this IO will be part.
+            name: the name of this IO. Should be unique within the cell.
+        """
         super(InternalOutput, self).__init__(cell, name)
         self.__entry_point: ConnectionEntryPoint[T] = ConnectionEntryPoint(self, max_incoming_connections=1)
         self._notify_observers_of_creation()
@@ -80,54 +85,18 @@ class InternalOutput(AOutput[T], IConnectionEntryPoint[T], Generic[T]):
         return 0
 
     def get_incoming_connections(self) -> "Sequence[IConnection[T]]":
-        """
-        Returns:
-            The incoming connections of this internal output.
-        """
         return self.__entry_point.get_incoming_connections()
 
     def can_have_as_incoming_connection(self, connection: "IConnection[T]") -> BoolExplained:
-        """
-        Args:
-            connection: connection to validate.
-        Returns:
-            TrueExplained if the given connection is a valid incoming connection for this internal output.
-            FalseExplained otherwise.
-        """
         return self.__entry_point.can_have_as_incoming_connection(connection)
 
     def can_have_as_nb_incoming_connections(self, number_of_incoming_connections: int) -> BoolExplained:
-        """
-        Args:
-            number_of_incoming_connections: the number of incoming connections to validate.
-        Returns:
-            TrueExplained if the given number is a valid number of incoming connection for this IO.
-            FalseExplained otherwise.
-        """
         return self.__entry_point.can_have_as_nb_incoming_connections(number_of_incoming_connections)
 
     def _add_incoming_connection(self, connection: "IConnection[T]") -> None:
-        """
-        Auxiliary mutator in the IConnection-IConnectionEntryPoint relation, as the target of the connection.
-        -> Should only be used by an IConnection, when registering itself as incoming connection.
-
-        Args:
-            connection: the connection to add as incoming connection.
-        Raises:
-            InvalidInputException
-        """
         self.__entry_point._add_incoming_connection(connection)
 
     def _remove_incoming_connection(self, connection: "IConnection[T]") -> None:
-        """
-        Auxiliary mutator in the IConnection-IConnectionEntryPoint relation, as the target of the connection.
-        -> Should only be used by an IConnection, when unregistering itself as incoming connection.
-
-        Args:
-            connection: the connection to remove as incoming connection.
-        Raises:
-            InvalidInputException
-        """
         self.__entry_point._remove_incoming_connection(connection)
 
     def has_as_incoming_connection(self, connection: "IConnection[T]") -> bool:
@@ -146,10 +115,6 @@ class InternalOutput(AOutput[T], IConnectionEntryPoint[T], Generic[T]):
         return self.__entry_point.get_incoming_connection_with(source)
 
     def assert_has_proper_incoming_connections(self) -> None:
-        """
-        Raises:
-            InvalidStateException: if one or more of the incoming connections is invalid.
-        """
         self.__entry_point.assert_has_proper_incoming_connections()
 
     def get_nb_available_pulls(self) -> Optional[int]:
@@ -169,13 +134,5 @@ class InternalOutput(AOutput[T], IConnectionEntryPoint[T], Generic[T]):
         self.__entry_point.assert_is_valid()
 
     def delete(self) -> None:
-        """
-        Deletes this IO, and all its internals.
-
-        Main mutator in the IO-ICell relation, as owner of the IO.
-
-        Raises:
-            CannotBeDeletedException
-        """
         super(InternalOutput, self).delete()
         self.__entry_point.delete()
