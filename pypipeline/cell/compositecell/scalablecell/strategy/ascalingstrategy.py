@@ -14,6 +14,7 @@
 # along with this program.  If not, see https://www.gnu.org/licenses/agpl-3.0.en.html
 
 from typing import TYPE_CHECKING, Type
+from abc import ABC, abstractmethod
 import logging
 
 import pypipeline
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
     from pypipeline.cell.compositecell.scalablecell.strategy.cloningstrategy.clonecell.iclonecell import ICloneCell
 
 
-class AScalingStrategy:
+class AScalingStrategy(ABC):
     """
     Abstract base class for scaling strategies.
 
@@ -52,6 +53,7 @@ class AScalingStrategy:
         self.__scalable_cell_deployment = scalable_cell_deployment
 
     @classmethod
+    @abstractmethod
     def create(cls, scalable_cell_deployment: "ScalableCellDeployment") -> "AScalingStrategy":
         """
         Factory method for creating a scaling strategy.
@@ -105,6 +107,7 @@ class AScalingStrategy:
         """
         return self.get_scalable_cell_deployment().get_internal_cell()
 
+    @abstractmethod
     def add_clone(self, method: Type["ICloneCell"]) -> None:
         """
         Add a clone with the given type to this scaling strategy.
@@ -116,6 +119,7 @@ class AScalingStrategy:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def remove_clone(self, method: Type["ICloneCell"]) -> None:
         """
         Remove a clone with the given type from this scaling strategy.
@@ -127,6 +131,7 @@ class AScalingStrategy:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _on_pull(self) -> None:
         """
         Executed when the scalable cell gets pulled.
@@ -139,6 +144,7 @@ class AScalingStrategy:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def reset(self) -> None:
         """
         Reset the scaling strategy and its internal cell.

@@ -15,6 +15,7 @@
 
 from typing import TypeVar, Generic, Optional, TYPE_CHECKING, Callable, Sequence
 from threading import RLock
+from abc import ABC
 
 from pypipeline.cellio.acellio.abstractio import AbstractIO
 from pypipeline.cellio.icellio import IOutput
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
 T = TypeVar('T')
 
 
-class AOutput(AbstractIO[T], IOutput[T], Generic[T]):
+class AOutput(AbstractIO[T], IOutput[T], ABC, Generic[T]):
 
     def __init__(self, cell: "ICell", name: str, validation_fn: Optional[Callable[[T], bool]] = None):
         """
@@ -44,9 +45,6 @@ class AOutput(AbstractIO[T], IOutput[T], Generic[T]):
     def _get_cell_pull_lock(self) -> "RLock":
         return self.get_cell()._get_pull_lock()
 
-    def pull(self) -> T:
-        raise NotImplementedError
-
     def reset(self) -> None:    # TODO threadsafety?
         if self.__reset_is_busy:
             # recurrently called
@@ -59,33 +57,3 @@ class AOutput(AbstractIO[T], IOutput[T], Generic[T]):
 
     def set_value(self, value: T) -> None:
         super(AOutput, self)._set_value(value)
-
-    def get_incoming_connections(self) -> "Sequence[IConnection[T]]":
-        raise NotImplementedError
-
-    def has_as_incoming_connection(self, connection: "IConnection[T]") -> bool:
-        raise NotImplementedError
-
-    def get_nb_incoming_connections(self) -> int:
-        raise NotImplementedError
-
-    def get_outgoing_connections(self) -> "Sequence[IConnection[T]]":
-        raise NotImplementedError
-
-    def has_as_outgoing_connection(self, connection: "IConnection[T]") -> bool:
-        raise NotImplementedError
-
-    def get_nb_outgoing_connections(self) -> int:
-        raise NotImplementedError
-
-    def all_outgoing_connections_have_pulled(self) -> bool:
-        raise NotImplementedError
-
-    def get_nb_available_pulls(self) -> Optional[int]:
-        raise NotImplementedError
-
-    def _get_connection_entry_point(self) -> Optional["ConnectionEntryPoint"]:
-        raise NotImplementedError
-
-    def _get_connection_exit_point(self) -> Optional["ConnectionExitPoint"]:
-        raise NotImplementedError

@@ -14,6 +14,7 @@
 # along with this program.  If not, see https://www.gnu.org/licenses/agpl-3.0.en.html
 
 from typing import TypeVar, Generic, TYPE_CHECKING
+from abc import ABC, abstractmethod
 
 from pypipeline.cellio.icellio.io import IO
 
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
 T = TypeVar('T')
 
 
-class IConnectionEntryPoint(IO[T], Generic[T]):
+class IConnectionEntryPoint(IO[T], ABC, Generic[T]):
     """
     Connection entrypoint interface.
 
@@ -39,6 +40,7 @@ class IConnectionEntryPoint(IO[T], Generic[T]):
     target of the connection.
     """
 
+    @abstractmethod
     def can_have_as_incoming_connection(self, connection: "IConnection[T]") -> "BoolExplained":
         """
         Args:
@@ -48,6 +50,7 @@ class IConnectionEntryPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def can_have_as_nb_incoming_connections(self, number_of_incoming_connections: int) -> "BoolExplained":
         """
         Args:
@@ -58,6 +61,7 @@ class IConnectionEntryPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _add_incoming_connection(self, connection: "IConnection[T]") -> None:
         """
         Should only be used by IConnection objects in their __init__.
@@ -72,6 +76,7 @@ class IConnectionEntryPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _remove_incoming_connection(self, connection: "IConnection[T]") -> None:
         """
         Should only be used by IConnection objects in their delete().
@@ -86,6 +91,7 @@ class IConnectionEntryPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_max_nb_incoming_connections(self) -> int:
         """
         Returns:
@@ -93,6 +99,7 @@ class IConnectionEntryPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_incoming_connection_with(self, source: "IConnectionExitPoint[T]") -> bool:
         """
         Args:
@@ -102,6 +109,7 @@ class IConnectionEntryPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_incoming_connection_with(self, source: "IConnectionExitPoint[T]") -> "IConnection[T]":
         """
         Args:
@@ -113,6 +121,7 @@ class IConnectionEntryPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_incoming_connections(self) -> None:
         """
         Raises:

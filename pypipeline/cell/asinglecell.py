@@ -14,6 +14,7 @@
 # along with this program.  If not, see https://www.gnu.org/licenses/agpl-3.0.en.html
 
 from typing import Optional, TYPE_CHECKING
+from abc import abstractmethod
 
 from pypipeline.cell.acell import ACell
 
@@ -68,6 +69,7 @@ class ASingleCell(ACell):
         """
         super(ASingleCell, self)._on_undeploy()
 
+    @abstractmethod
     def _on_pull(self) -> None:
         """
         Override this method to add functionality that must happen when pulling the cell.

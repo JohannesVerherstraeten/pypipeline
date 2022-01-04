@@ -15,6 +15,7 @@
 
 from typing import TypeVar, Generic, Optional, Dict, TYPE_CHECKING, Any, Callable, Sequence
 from threading import RLock, Condition
+from abc import ABC, abstractmethod
 import logging
 
 import pypipeline
@@ -33,7 +34,7 @@ if TYPE_CHECKING:
 T = TypeVar('T')
 
 
-class AbstractIO(IO[T], Generic[T]):
+class AbstractIO(IO[T], ABC, Generic[T]):
     """
     Abstract cell IO class.
 
@@ -74,13 +75,6 @@ class AbstractIO(IO[T], Generic[T]):
         """Should be called after every IO object has been fully created. """
         event = IOCreatedEvent(self.get_cell(), debug_message=f"io created with name {self.__name}")
         self.get_cell().notify_observers(event)
-
-    def _get_cell_pull_lock(self) -> "RLock":
-        """
-        Returns:
-            The pull lock which makes sure that the cell of this IO is not pulled concurrently.
-        """
-        raise NotImplementedError
 
     def _get_state_lock(self):
         """
@@ -150,27 +144,11 @@ class AbstractIO(IO[T], Generic[T]):
         result.extend(self.get_outgoing_connections())
         return result
 
-    def get_incoming_connections(self) -> "Sequence[IConnection[T]]":
-        raise NotImplementedError
-
-    def has_as_incoming_connection(self, connection: "IConnection[T]") -> bool:
-        raise NotImplementedError
-
-    def get_nb_incoming_connections(self) -> int:
-        raise NotImplementedError
-
-    def get_outgoing_connections(self) -> "Sequence[IConnection[T]]":
-        raise NotImplementedError
-
-    def has_as_outgoing_connection(self, connection: "IConnection[T]") -> bool:
-        raise NotImplementedError
-
-    def get_nb_outgoing_connections(self) -> int:
-        raise NotImplementedError
-
+    @abstractmethod
     def _get_connection_entry_point(self) -> Optional["ConnectionEntryPoint"]:
         raise NotImplementedError
 
+    @abstractmethod
     def _get_connection_exit_point(self) -> Optional["ConnectionExitPoint"]:
         raise NotImplementedError
 
@@ -194,9 +172,6 @@ class AbstractIO(IO[T], Generic[T]):
     def _assert_is_properly_deployed(self) -> None:
         for connection in self.get_all_connections():
             connection._assert_is_properly_deployed()        # access to protected member on purpose
-
-    def pull(self) -> T:
-        raise NotImplementedError
 
     def reset(self) -> None:
         self._clear_value()
@@ -253,9 +228,6 @@ class AbstractIO(IO[T], Generic[T]):
 
     def _set_sync_state(self, state: Dict) -> None:
         pass
-
-    def get_nb_available_pulls(self) -> Optional[int]:
-        raise NotImplementedError
 
     def _is_optional_even_when_typing_says_otherwise(self) -> bool:
         if len(self.get_outgoing_connections()) == 0:

@@ -14,6 +14,7 @@
 # along with this program.  If not, see https://www.gnu.org/licenses/agpl-3.0.en.html
 
 from typing import Optional, Dict, Set, TYPE_CHECKING, Any, List, Sequence
+from abc import ABC, abstractmethod
 
 import pypipeline
 from pypipeline.cell.acell import ACell
@@ -31,7 +32,7 @@ if TYPE_CHECKING:
     from pypipeline.connection import IConnection
 
 
-class ACompositeCell(ACell, ICompositeCell):
+class ACompositeCell(ACell, ICompositeCell, ABC):
     """
     Abstract composite cell class.
 
@@ -474,9 +475,6 @@ class ACompositeCell(ACell, ICompositeCell):
         return tuple(topology.get_ordered_cells())
 
     # ------ Pulling ------
-
-    def _on_pull(self) -> None:
-        raise NotImplementedError
 
     def _on_reset(self) -> None:
         super(ACompositeCell, self)._on_reset()

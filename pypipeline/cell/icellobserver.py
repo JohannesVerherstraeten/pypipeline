@@ -14,11 +14,12 @@
 # along with this program.  If not, see https://www.gnu.org/licenses/agpl-3.0.en.html
 
 from typing import Optional, Sequence
+from abc import ABC, abstractmethod
 
 from pypipeline.validation import BoolExplained
 
 
-class IObservable:
+class IObservable(ABC):
     """
     Observer pattern interface, complementary to IObserver.
 
@@ -28,6 +29,7 @@ class IObservable:
     registered multiple times.
     """
 
+    @abstractmethod
     def get_observers(self) -> Sequence["IObserver"]:
         """
         Returns:
@@ -35,6 +37,7 @@ class IObservable:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _add_observer(self, observer: "IObserver") -> None:
         """
         Auxiliary mutator in the IObserver-IObservable relation, as observable.
@@ -47,6 +50,7 @@ class IObservable:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _remove_observer(self, observer: "IObserver") -> None:
         """
         Auxiliary mutator in the IObserver-IObservable relation, as observable.
@@ -60,6 +64,7 @@ class IObservable:
         raise NotImplementedError
 
     @classmethod
+    @abstractmethod
     def can_have_as_observer(cls, observer: "IObserver") -> "BoolExplained":
         """
         Args:
@@ -69,6 +74,7 @@ class IObservable:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_as_observer(self, observer: "IObserver") -> bool:
         """
         Args:
@@ -78,6 +84,7 @@ class IObservable:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_observers(self) -> None:
         """
         Raises:
@@ -85,6 +92,7 @@ class IObservable:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def notify_observers(self, event: "Event") -> None:
         """
         Calls the observer.update(event) method for every observer.
@@ -97,7 +105,7 @@ class IObservable:
         raise NotImplementedError
 
 
-class IObserver:
+class IObserver(ABC):
     """
     Observer pattern interface, complementary to IObservable.
 
@@ -113,6 +121,7 @@ class IObserver:
      - self.assert_has_proper_observables()
     """
 
+    @abstractmethod
     def update(self, event: "Event") -> None:
         """
         Will be called by the observables of this observer.
@@ -124,6 +133,7 @@ class IObserver:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_as_observable(self, observable: "IObservable") -> bool:
         """
         Args:
@@ -134,7 +144,7 @@ class IObserver:
         raise NotImplementedError
 
 
-class Event:
+class Event(ABC):
 
     def __init__(self, initiator: IObservable, debug_message: Optional[str] = None):
         self.__initiator = initiator

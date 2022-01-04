@@ -14,6 +14,7 @@
 # along with this program.  If not, see https://www.gnu.org/licenses/agpl-3.0.en.html
 
 from typing import TypeVar, Generic, Dict, Any, Optional, TYPE_CHECKING
+from abc import ABC, abstractmethod
 
 from pypipeline.validation import BoolExplained
 from pypipeline.cellio import IConnectionEntryPoint, IConnectionExitPoint
@@ -25,7 +26,7 @@ if TYPE_CHECKING:
 T = TypeVar('T')
 
 
-class IConnection(Generic[T]):
+class IConnection(ABC, Generic[T]):
     """
     Connection interface.
 
@@ -41,6 +42,7 @@ class IConnection(Generic[T]):
     connection of the exit point.
     """
 
+    @abstractmethod
     def get_source(self) -> "IConnectionExitPoint[T]":
         """
         Returns:
@@ -49,6 +51,7 @@ class IConnection(Generic[T]):
         raise NotImplementedError
 
     @classmethod
+    @abstractmethod
     def can_have_as_source(cls, source: "IConnectionExitPoint[T]") -> BoolExplained:
         """
         Args:
@@ -59,6 +62,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_target(self) -> "IConnectionEntryPoint[T]":
         """
         Returns:
@@ -67,6 +71,7 @@ class IConnection(Generic[T]):
         raise NotImplementedError
 
     @classmethod
+    @abstractmethod
     def can_have_as_target(cls, target: "IConnectionEntryPoint[T]") -> BoolExplained:
         """
         Args:
@@ -78,6 +83,7 @@ class IConnection(Generic[T]):
         raise NotImplementedError
 
     @classmethod
+    @abstractmethod
     def can_have_as_source_and_target(cls,
                                       source: "IConnectionExitPoint[T]",
                                       target: "IConnectionEntryPoint[T]") -> BoolExplained:
@@ -91,6 +97,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_source_and_target(self) -> None:
         """
         Raises:
@@ -98,6 +105,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_parent_cell(self) -> "ICompositeCell":
         """
         Returns:
@@ -106,6 +114,7 @@ class IConnection(Generic[T]):
         raise NotImplementedError
 
     @classmethod
+    @abstractmethod
     def can_have_as_parent_cell(cls, cell: "ICompositeCell") -> BoolExplained:
         """
         Args:
@@ -115,6 +124,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_parent_cell(self) -> None:
         """
         Raises:
@@ -122,6 +132,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def is_inter_cell_connection(self) -> bool:
         """
         An inter-cell connection is a connection between 2 cells with the same parent cell.
@@ -131,6 +142,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def is_intra_cell_connection(self) -> bool:
         """
         An intra-cell connection is a connection between a composite cell's IO and one of its internal cells.
@@ -140,6 +152,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def is_explicitly_marked_as_recurrent(self) -> bool:
         """
         Returns:
@@ -147,6 +160,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def is_explicitly_marked_as_non_recurrent(self) -> bool:
         """
         Returns:
@@ -154,6 +168,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def is_recurrent(self) -> bool:
         """
         Returns:
@@ -161,6 +176,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_topology_description(self) -> Dict[str, Any]:
         """
         Returns:
@@ -168,6 +184,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_topology(self) -> None:
         """
         Raises:
@@ -175,18 +192,21 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _deploy(self) -> None:
         """
         Deploy this connection. Should only be used by IO instances.
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _undeploy(self) -> None:
         """
         Undeploy this connection. Should only be used by IO instances.
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _is_deployed(self) -> bool:
         """
         Returns:
@@ -194,6 +214,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _assert_is_properly_deployed(self) -> None:
         """
         Raises:
@@ -201,6 +222,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def pull(self) -> T:
         """
         Pull this connection. This will pull the connection source, and return the value that comes out of it.
@@ -210,12 +232,14 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def reset(self) -> None:
         """
         Reset the connection and all its upstream cells.
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_nb_available_pulls(self) -> Optional[int]:
         """
         Returns:
@@ -223,6 +247,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_is_valid(self) -> None:
         """
         Raises:
@@ -230,6 +255,7 @@ class IConnection(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def delete(self) -> None:
         """
         Delete this connection.

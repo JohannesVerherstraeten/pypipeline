@@ -14,6 +14,7 @@
 # along with this program.  If not, see https://www.gnu.org/licenses/agpl-3.0.en.html
 
 from typing import Optional, Any, TYPE_CHECKING, Dict, Sequence
+from abc import ABC, abstractmethod
 
 from pypipeline.cell.icellobserver import IObservable
 
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
     from pypipeline.validation import BoolExplained
 
 
-class ICell(IObservable):
+class ICell(IObservable, ABC):
     """
     Cell interface.
 
@@ -39,6 +40,7 @@ class ICell(IObservable):
     An ICell is the controlled class in the IO-ICell relation, as owner of the IO.
     """
 
+    @abstractmethod
     def _get_pull_lock(self) -> "RLock":
         """
         Returns:
@@ -46,6 +48,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_name(self) -> str:
         """
         Returns:
@@ -53,6 +56,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_full_name(self) -> str:
         """
         Returns:
@@ -62,6 +66,7 @@ class ICell(IObservable):
         raise NotImplementedError
 
     @classmethod
+    @abstractmethod
     def can_have_as_name(cls, name: str) -> "BoolExplained":
         """
         Args:
@@ -72,6 +77,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_name(self) -> None:
         """
         Raises:
@@ -79,6 +85,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_parent_cell(self) -> "Optional[ICompositeCell]":
         """
         Returns:
@@ -86,6 +93,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _set_parent_cell(self, parent_cell: "Optional[ICompositeCell]") -> None:
         """
         Auxiliary mutator in the ICompositeCell-ICell, as internal cell of a parent composite cell.
@@ -99,6 +107,7 @@ class ICell(IObservable):
         raise NotImplementedError
 
     @classmethod
+    @abstractmethod
     def can_have_as_parent_cell(cls, cell: "Optional[ICompositeCell]") -> "BoolExplained":
         """
         Args:
@@ -109,6 +118,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_parent_cell(self) -> None:
         """
         Raises:
@@ -116,6 +126,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_all_io(self) -> Sequence["IO"]:
         """
         Returns:
@@ -123,6 +134,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_io(self, name: str) -> "IO":
         """
         Args:
@@ -134,6 +146,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_io_names(self) -> Sequence[str]:
         """
         Returns:
@@ -141,6 +154,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def can_have_as_io(self, io: "IO") -> "BoolExplained":
         """
         Args:
@@ -150,6 +164,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _add_io(self, io: "IO") -> None:
         """
         Auxiliary mutator in the IO-ICell relation, as owner of the IO.
@@ -163,6 +178,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _remove_io(self, io: "IO") -> None:
         """
         Auxiliary mutator in the IO-ICell relation, as owner of the IO.
@@ -176,6 +192,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_io(self) -> None:
         """
         Raises:
@@ -183,6 +200,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_as_io(self, io: "IO") -> bool:
         """
         Args:
@@ -192,6 +210,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_inputs(self) -> Sequence["IInput"]:
         """
         Returns:
@@ -199,6 +218,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_input_names(self) -> Sequence[str]:
         """
         Returns:
@@ -206,6 +226,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_input(self, name: str) -> "IInput":
         """
         Raises:
@@ -213,6 +234,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_inputs_recursively(self) -> Sequence["IInput"]:
         """
         Returns:
@@ -220,6 +242,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_input_recursively(self, full_name: str) -> "IInput":
         """
         Get the input with the given full name.
@@ -236,6 +259,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_as_input(self, cell_input: "IInput") -> bool:
         """
         Args:
@@ -245,6 +269,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_outputs(self) -> Sequence["IOutput"]:
         """
         Returns:
@@ -252,6 +277,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_output_names(self) -> Sequence[str]:
         """
         Returns:
@@ -259,6 +285,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_output(self, name: str) -> "IOutput":
         """
         Raises:
@@ -266,6 +293,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_outputs_recursively(self) -> Sequence["IOutput"]:
         """
         Returns:
@@ -273,6 +301,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_output_recursively(self, full_name: str) -> "IOutput":
         """
         Get the output with the given full name.
@@ -289,6 +318,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_as_output(self, cell_output: "IOutput") -> bool:
         """
         Args:
@@ -298,6 +328,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def is_source_cell(self) -> bool:
         """
         Source cells are cells that provide data to a pipeline.
@@ -313,6 +344,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def is_sink_cell(self) -> bool:
         """
         Sink cells are cells that remove data from a pipeline.
@@ -328,6 +360,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_topology_description(self) -> Dict[str, Any]:
         """
         Returns:
@@ -338,6 +371,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_observers(self) -> Sequence["IObserver"]:
         """
         Returns:
@@ -345,6 +379,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _add_observer(self, observer: "IObserver") -> None:
         """
         Auxiliary mutator in the IObserver-IObservable relation, as observable.
@@ -357,6 +392,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _remove_observer(self, observer: "IObserver") -> None:
         """
         Auxiliary mutator in the IObserver-IObservable relation, as observable.
@@ -370,6 +406,7 @@ class ICell(IObservable):
         raise NotImplementedError
 
     @classmethod
+    @abstractmethod
     def can_have_as_observer(cls, observer: "IObserver") -> "BoolExplained":
         """
         Auxiliary validator in the IObserver-IObservable relation, as observable.
@@ -381,6 +418,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_as_observer(self, observer: "IObserver") -> bool:
         """
         Args:
@@ -390,6 +428,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_observers(self) -> None:
         """
         Raises:
@@ -397,6 +436,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def notify_observers(self, event: "Event") -> None:
         """
         Notify all observers of this cell that the given event just happened.
@@ -408,6 +448,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _get_sync_state(self) -> Dict[str, Any]:
         """
         Used for synchronizing the state of clone cells with that of their corresponding original one.
@@ -417,6 +458,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _set_sync_state(self, state: Dict) -> None:
         """
         Used for synchronizing the state of clone cells with that of their corresponding original one.
@@ -428,6 +470,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def clone(self, new_parent: "Optional[ICompositeCell]") -> "ICell":
         """
         Clone this cell to a new parent cell.
@@ -444,6 +487,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def supports_scaling(self) -> bool:
         """
         A cell support scaling if it supports multiple clones of it running in parallel. This should usually be False
@@ -454,6 +498,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def inputs_are_provided(self) -> "BoolExplained":
         """
         Returns:
@@ -462,6 +507,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def is_deployable(self) -> "BoolExplained":
         """
         Returns:
@@ -469,6 +515,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def deploy(self) -> None:
         """
         Deploy this cell.
@@ -486,6 +533,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def undeploy(self) -> None:
         """
         Undeploy this cell.
@@ -500,6 +548,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def is_deployed(self) -> bool:
         """
         Returns:
@@ -507,6 +556,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_is_properly_deployed(self) -> None:
         """
         Raises:
@@ -514,6 +564,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def pull_as_output(self, output: "IOutput") -> None:
         """
         Cells should only execute again when all their outputs have pulled the previous result.
@@ -536,6 +587,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def pull(self) -> None:
         """
         During a pull, a cell will pull its inputs, execute it's functionality and set its outputs.
@@ -553,6 +605,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def all_outputs_have_been_pulled(self) -> bool:
         """
         Returns:
@@ -561,6 +614,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _notify_connection_has_pulled(self) -> None:
         """
         Notifies the cell that one of the outgoing connections successfully pulled, and that other threads waiting
@@ -568,6 +622,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_nb_available_pulls(self) -> Optional[int]:
         """
         Returns the total number of times this cell can be pulled.
@@ -585,6 +640,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def reset(self) -> None:
         """
         Reset the internal state of a cell and its prerequisite cells.
@@ -604,6 +660,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_nb_required_gpus(self) -> float:
         """
         Override this method to indicate how much GPUs your cell needs.
@@ -615,6 +672,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_is_valid(self) -> None:
         """
         Raises:
@@ -622,6 +680,7 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def delete(self) -> None:       # TODO all cells should override this correctly
         """
         Deletes this cell, and all its internals.

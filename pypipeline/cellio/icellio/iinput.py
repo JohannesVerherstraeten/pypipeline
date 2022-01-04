@@ -14,6 +14,7 @@
 # along with this program.  If not, see https://www.gnu.org/licenses/agpl-3.0.en.html
 
 from typing import TypeVar, Generic
+from abc import ABC, abstractmethod
 
 from pypipeline.cellio.icellio.io import IO
 
@@ -21,8 +22,9 @@ from pypipeline.cellio.icellio.io import IO
 T = TypeVar('T')
 
 
-class IInput(IO[T], Generic[T]):
+class IInput(IO[T], ABC, Generic[T]):
 
+    @abstractmethod
     def is_provided(self) -> bool:
         """
         Returns:

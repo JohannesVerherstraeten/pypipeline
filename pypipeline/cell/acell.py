@@ -15,6 +15,7 @@
 
 from typing import Optional, List, Any, TYPE_CHECKING, Dict, Type, Sequence
 from threading import RLock, Condition
+from abc import ABC, abstractmethod
 import logging
 from pprint import pformat
 
@@ -31,7 +32,7 @@ if TYPE_CHECKING:
     from pypipeline.cell.icellobserver import IObserver, Event
 
 
-class ACell(ICell):
+class ACell(ICell, ABC):
     """
     Abstract cell class.
 
@@ -321,9 +322,6 @@ class ACell(ICell):
         cell_type: Type["ACell"] = type(self)
         return cell_type(new_parent, self.get_name())       # TODO raise proper exception when the cell has another __init__ signature.
 
-    def supports_scaling(self) -> bool:
-        raise NotImplementedError
-
     # ------ Deployment ------
 
     def inputs_are_provided(self) -> "BoolExplained":
@@ -467,6 +465,7 @@ class ACell(ICell):
             self._on_pull()
             self.__has_been_pulled_at_least_once = True
 
+    @abstractmethod
     def _on_pull(self) -> None:
         """
         Override this method to add functionality that must happen when pulling the cell.
@@ -541,6 +540,7 @@ class ACell(ICell):
             input_.reset()
         self.__has_been_pulled_at_least_once = False
 
+    @abstractmethod
     def get_nb_required_gpus(self) -> float:
         raise NotImplementedError
 

@@ -15,6 +15,7 @@
 
 from typing import TypeVar, Generic, Sequence, TYPE_CHECKING, Optional
 from threading import BoundedSemaphore
+from abc import ABC, abstractmethod
 
 from pypipeline.cell.icell import ICell
 from pypipeline.cell.icellobserver import IObservable
@@ -86,7 +87,7 @@ class CloneOutput(InternalOutput[T], Generic[T]):
         return super(CloneOutput, self).pull()
 
 
-class ACloneCell(ACompositeCell, ICloneCell):
+class ACloneCell(ACompositeCell, ICloneCell, ABC):
     """
     Abstract clone cell class.
 
@@ -123,6 +124,7 @@ class ACloneCell(ACompositeCell, ICloneCell):
                 CloneOutput(self, output_name)
 
     @classmethod
+    @abstractmethod
     def create(cls, original_cell: "ICell", name: str) -> "ACloneCell":
         raise NotImplementedError
 
@@ -167,6 +169,7 @@ class ACloneCell(ACompositeCell, ICloneCell):
 
     # ------ Other methods ------
 
+    @abstractmethod
     def _on_pull(self) -> None:
         raise NotImplementedError
 

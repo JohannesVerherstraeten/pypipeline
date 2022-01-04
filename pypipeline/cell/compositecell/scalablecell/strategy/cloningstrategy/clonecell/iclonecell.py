@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see https://www.gnu.org/licenses/agpl-3.0.en.html
 
-from typing import Sequence, TYPE_CHECKING, Optional
+from typing import Sequence, TYPE_CHECKING
+from abc import ABC, abstractmethod
 
 from pypipeline.cell.compositecell.icompositecell import ICompositeCell
 
@@ -23,7 +24,7 @@ if TYPE_CHECKING:
     from pypipeline.cellio import InternalInput, InternalOutput
 
 
-class ICloneCell(ICompositeCell):
+class ICloneCell(ICompositeCell, ABC):
     """
     Clone cell interface.
 
@@ -32,6 +33,7 @@ class ICloneCell(ICompositeCell):
     """
 
     @classmethod
+    @abstractmethod
     def create(cls, original_cell: "ICell", name: str) -> "ICloneCell":
         """
         Factory method to create a new clone.
@@ -49,6 +51,7 @@ class ICloneCell(ICompositeCell):
 
     # ------ Original cell ------
 
+    @abstractmethod
     def get_original_cell(self) -> "ICell":
         """
         Returns:
@@ -56,6 +59,7 @@ class ICloneCell(ICompositeCell):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def can_have_as_original_cell(self, original_cell: "ICell") -> "BoolExplained":
         """
         Args:
@@ -65,6 +69,7 @@ class ICloneCell(ICompositeCell):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_original_cell(self) -> None:
         """
         Raises:
@@ -74,6 +79,7 @@ class ICloneCell(ICompositeCell):
 
     # ------ Inputs & Outputs ------
 
+    @abstractmethod
     def get_clone_inputs(self) -> "Sequence[InternalInput]":
         """
         Returns:
@@ -81,6 +87,7 @@ class ICloneCell(ICompositeCell):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_clone_input(self, name: str) -> "InternalInput":
         """
         Args:
@@ -92,6 +99,7 @@ class ICloneCell(ICompositeCell):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_clone_outputs(self) -> "Sequence[InternalOutput]":
         """
         Returns:
@@ -99,6 +107,7 @@ class ICloneCell(ICompositeCell):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_clone_output(self, name: str) -> "InternalOutput":
         """
         Args:

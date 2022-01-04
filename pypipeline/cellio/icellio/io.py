@@ -14,6 +14,7 @@
 # along with this program.  If not, see https://www.gnu.org/licenses/agpl-3.0.en.html
 
 from typing import TypeVar, Generic, Optional, Dict, TYPE_CHECKING, Any, Callable, Sequence
+from abc import ABC, abstractmethod
 
 from pypipeline.validation import BoolExplained
 
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
 T = TypeVar('T')
 
 
-class IO(Generic[T]):
+class IO(ABC, Generic[T]):
     """
     Cell IO interface.
 
@@ -36,6 +37,7 @@ class IO(Generic[T]):
     An IO is the controlling class in the IO-ICell relation, as IO of the cell.
     """
 
+    @abstractmethod
     def _get_cell_pull_lock(self) -> "RLock":
         """
         Returns:
@@ -43,6 +45,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_name(self) -> str:
         """
         Returns:
@@ -50,6 +53,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_full_name(self) -> str:
         """
         Returns:
@@ -59,6 +63,7 @@ class IO(Generic[T]):
         raise NotImplementedError
 
     @classmethod
+    @abstractmethod
     def can_have_as_name(cls, name: str) -> BoolExplained:
         """
         Args:
@@ -68,6 +73,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_name(self) -> None:
         """
         Raises:
@@ -75,6 +81,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_cell(self) -> "ICell":
         """
         Returns:
@@ -82,6 +89,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def can_have_as_cell(self, cell: "ICell") -> BoolExplained:
         """
         Args:
@@ -91,6 +99,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_cell(self) -> None:
         """
         Raises:
@@ -98,6 +107,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_validation_fn(self) -> Optional[Callable[[T], bool]]:
         """
         Returns:
@@ -106,6 +116,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def can_have_as_validation_fn(self, validation_fn: Optional[Callable[[T], bool]]) -> BoolExplained:
         """
         Args:
@@ -115,6 +126,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_validation_fn(self) -> None:
         """
         Raises:
@@ -122,6 +134,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def pull(self) -> T:
         """
         Pulling an IO requests a new value to be set. It will block until the new value is available.
@@ -134,6 +147,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def reset(self) -> None:
         """
         Resets the state of the IO (ex: its current value).
@@ -143,6 +157,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_value(self) -> T:
         """
         Returns:
@@ -152,6 +167,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _set_value(self, value: T) -> None:
         """
         Args:
@@ -161,6 +177,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def value_is_set(self) -> bool:
         """
         Returns:
@@ -168,6 +185,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def can_have_as_value(self, value: T) -> bool:
         """
         Args:
@@ -177,6 +195,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _wait_for_value(self, interruption_frequency: Optional[float] = None) -> None:
         """
         Blocking call that only returns when a new value is available.
@@ -189,12 +208,14 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _acknowledge_value(self) -> None:
         """
         TODO should this method be part of the general interface?
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_value(self) -> None:
         """
         Raises:
@@ -202,6 +223,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_all_connections(self) -> "Sequence[IConnection[T]]":
         """
         Returns:
@@ -209,6 +231,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_incoming_connections(self) -> "Sequence[IConnection[T]]":
         """
         Returns:
@@ -216,6 +239,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_nb_incoming_connections(self) -> int:
         """
         Returns:
@@ -223,6 +247,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_as_incoming_connection(self, connection: "IConnection[T]") -> bool:
         """
         Args:
@@ -232,6 +257,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_outgoing_connections(self) -> "Sequence[IConnection[T]]":
         """
         Returns:
@@ -239,6 +265,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_nb_outgoing_connections(self) -> int:
         """
         Returns:
@@ -246,6 +273,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_as_outgoing_connection(self, connection: "IConnection[T]") -> bool:
         """
         Returns:
@@ -253,18 +281,21 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _deploy(self) -> None:
         """
         Deploy this IO.
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _undeploy(self) -> None:
         """
         UnDeploy this IO.
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _is_deployed(self) -> bool:
         """
         Returns:
@@ -272,6 +303,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _assert_is_properly_deployed(self) -> None:
         """
         Raises:
@@ -279,6 +311,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _get_sync_state(self) -> Dict[str, Any]:
         """
         Used for synchronizing the state clone IOs with the state of their corresponding original ones.
@@ -288,6 +321,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _set_sync_state(self, state: Dict) -> None:
         """
         Used for synchronizing the state of clone IOs with the state of their corresponding original ones.
@@ -297,6 +331,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_nb_available_pulls(self) -> Optional[int]:
         """
         Returns the total number of times this IO can be pulled.
@@ -310,6 +345,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _is_optional_even_when_typing_says_otherwise(self) -> bool:
         """
         Are None values allowed to be set at this IO, even when the IO generic type is not an Optional?
@@ -321,6 +357,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_topology_description(self) -> Dict[str, Any]:
         """
         Returns:
@@ -331,6 +368,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_is_valid(self) -> None:
         """
         Raises:
@@ -338,6 +376,7 @@ class IO(Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def delete(self) -> None:
         """
         Deletes this IO, and all its internals.

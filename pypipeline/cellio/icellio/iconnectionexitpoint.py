@@ -14,6 +14,7 @@
 # along with this program.  If not, see https://www.gnu.org/licenses/agpl-3.0.en.html
 
 from typing import TypeVar, Generic, TYPE_CHECKING
+from abc import ABC, abstractmethod
 
 from pypipeline.cellio.icellio.io import IO
 
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
 T = TypeVar('T')
 
 
-class IConnectionExitPoint(IO[T], Generic[T]):
+class IConnectionExitPoint(IO[T], ABC, Generic[T]):
     """
     Connection exit point interface.
 
@@ -39,6 +40,7 @@ class IConnectionExitPoint(IO[T], Generic[T]):
     source of the connection.
     """
 
+    @abstractmethod
     def pull_as_connection(self, connection: "IConnection[T]") -> T:
         """
         Should only be used by IConnection instances.
@@ -50,6 +52,7 @@ class IConnectionExitPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def all_outgoing_connections_have_pulled(self) -> bool:
         """
         Returns:
@@ -57,6 +60,7 @@ class IConnectionExitPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_seen_value(self, connection: "IConnection[T]") -> bool:
         """
         Args:
@@ -67,6 +71,7 @@ class IConnectionExitPoint(IO[T], Generic[T]):
         raise NotImplementedError
 
     @classmethod
+    @abstractmethod
     def can_have_as_outgoing_connection(cls, connection: "IConnection[T]") -> "BoolExplained":
         """
         Args:
@@ -77,6 +82,7 @@ class IConnectionExitPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def can_have_as_nb_outgoing_connections(self, number_of_outgoing_connections: int) -> "BoolExplained":
         """
         Args:
@@ -87,6 +93,7 @@ class IConnectionExitPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _add_outgoing_connection(self, connection: "IConnection[T]") -> None:
         """
         Auxiliary mutator in the IConnection-IConnectionExitPoint relation, as the source of the connection.
@@ -99,6 +106,7 @@ class IConnectionExitPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _remove_outgoing_connection(self, connection: "IConnection[T]") -> None:
         """
         Auxiliary mutator in the IConnection-IConnectionExitPoint relation, as the source of the connection.
@@ -111,6 +119,7 @@ class IConnectionExitPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_max_nb_outgoing_connections(self) -> int:
         """
         Returns:
@@ -118,6 +127,7 @@ class IConnectionExitPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_outgoing_connection_to(self, target: "IConnectionEntryPoint[T]") -> bool:
         """
         Args:
@@ -127,6 +137,7 @@ class IConnectionExitPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_outgoing_connection_to(self, target: "IConnectionEntryPoint[T]") -> "IConnection[T]":
         """
         Args:
@@ -138,6 +149,7 @@ class IConnectionExitPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_outgoing_connections(self) -> None:
         """
         Raises:
@@ -145,6 +157,7 @@ class IConnectionExitPoint(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_initial_value(self) -> bool:
         """
         Returns:

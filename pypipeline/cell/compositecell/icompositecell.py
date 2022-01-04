@@ -15,6 +15,7 @@
 # along with this program.  If not, see https://www.gnu.org/licenses/agpl-3.0.en.html
 
 from typing import Optional, TYPE_CHECKING, Sequence
+from abc import ABC, abstractmethod
 
 from pypipeline.cell.icell import ICell
 from pypipeline.cell.icellobserver import IObserver
@@ -25,7 +26,7 @@ if TYPE_CHECKING:
     from pypipeline.validation import BoolExplained
 
 
-class ICompositeCell(ICell, IObserver):
+class ICompositeCell(ICell, IObserver, ABC):
     """
     Composite cell interface.
 
@@ -38,7 +39,8 @@ class ICompositeCell(ICell, IObserver):
     An ICompositeCell is the controlling class in the ICompositeCell-ICell relation, as parent of internal cells.
 
     An ICell is the controlled class in the IObserver-IObservable relation, as observable.
-    An ICompositeCell is the controlling class in the IObserver-IObservable relation, as potential observer of internal cells.
+    An ICompositeCell is the controlling class in the IObserver-IObservable relation, as potential observer of internal
+    cells.
 
     An ICell is the controlled class in the IO-ICell relation, as owner of the IO.
 
@@ -48,6 +50,7 @@ class ICompositeCell(ICell, IObserver):
 
     # ------ Internal cells ------
 
+    @abstractmethod
     def get_internal_cells(self) -> "Sequence[ICell]":
         """
         Returns:
@@ -55,6 +58,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_internal_cells_recursively(self) -> Sequence["ICell"]:
         """
         Returns:
@@ -62,6 +66,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_internal_cell_names(self) -> Sequence[str]:
         """
         Returns:
@@ -69,6 +74,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_internal_cell_with_name(self, name: str) -> "ICell":
         """
         Args:
@@ -80,6 +86,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _add_internal_cell(self, cell: "ICell") -> None:
         """
         Should only be used by ICell instances in their __init__.
@@ -95,6 +102,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _remove_internal_cell(self, cell: "ICell") -> None:
         """
         Should only be used by ICell instances in their delete().
@@ -110,6 +118,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def can_have_as_internal_cell(self, cell: "ICell") -> "BoolExplained":
         """
         Args:
@@ -119,6 +128,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_nb_internal_cells(self) -> int:
         """
         Returns:
@@ -126,6 +136,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_max_nb_internal_cells(self) -> int:
         """
         Returns:
@@ -133,6 +144,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def can_have_as_nb_internal_cells(self, number_of_internal_cells: int) -> "BoolExplained":
         """
         Main validator in the ICell-ICompositeCell relation, as parent of internal cells.
@@ -144,6 +156,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_as_internal_cell(self, cell: "ICell") -> bool:
         """
         Args:
@@ -153,6 +166,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_as_internal_cell_name(self, name: str) -> bool:
         """
         Args:
@@ -162,6 +176,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_internal_cells(self) -> None:
         """
         Raises:
@@ -171,6 +186,7 @@ class ICompositeCell(ICell, IObserver):
 
     # ------ Internal connections ------
 
+    @abstractmethod
     def _add_internal_connection(self, connection: "IConnection") -> None:
         """
         Should only be used by IConnection instances in their __init__.
@@ -185,6 +201,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _remove_internal_connection(self, connection: "IConnection") -> None:
         """
         Should only be used by IConnection instances in their delete().
@@ -199,6 +216,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def can_have_as_internal_connection(self, connection: "IConnection") -> "BoolExplained":
         """
         Args:
@@ -208,6 +226,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_internal_connections(self) -> "Sequence[IConnection]":
         """
         Returns:
@@ -215,6 +234,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def has_as_internal_connection(self, connection: "IConnection") -> bool:
         """
         Args:
@@ -224,6 +244,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_internal_connections(self) -> None:
         """
         Raises:
@@ -233,6 +254,7 @@ class ICompositeCell(ICell, IObserver):
 
     # ------ Topology ------
 
+    @abstractmethod
     def get_internal_topology(self) -> "Topology":
         """
         Returns:
@@ -243,6 +265,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def can_have_as_internal_topology(self, topology: Optional["Topology"]) -> "BoolExplained":
         """
         Args:
@@ -252,6 +275,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _set_internal_topology(self) -> None:
         """
         Sets the internal topology of this cell. See cell.get_internal_topology.
@@ -262,6 +286,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _clear_internal_topology(self) -> None:
         """
         Clears the internal topology of this cell. See cell.get_internal_topology.
@@ -271,6 +296,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _internal_topology_is_set(self) -> bool:
         """
         Returns:
@@ -278,6 +304,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def assert_has_proper_internal_topology(self) -> None:
         """
         Raises:
@@ -285,6 +312,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _has_as_internal_recurrent_connection(self, internal_connection: "IConnection") -> bool:
         """
         Should only be used by IConnection objects: see connection.is_recurrent()
@@ -299,6 +327,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _has_as_internal_source_cell(self, internal_cell: "ICell") -> bool:
         """
         Should only be used by ICell objects: see cell.is_source_cell()
@@ -313,6 +342,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _has_as_internal_sink_cell(self, internal_cell: "ICell") -> bool:
         """
         Should only be used by ICell objects: see cell.is_sink_cell()
@@ -327,6 +357,7 @@ class ICompositeCell(ICell, IObserver):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_internal_cells_in_topological_order(self) -> "Sequence[ICell]":
         """
         The topological order represents an order in which the cells can be executed.

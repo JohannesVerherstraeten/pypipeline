@@ -14,6 +14,7 @@
 # along with this program.  If not, see https://www.gnu.org/licenses/agpl-3.0.en.html
 
 from typing import TypeVar, Generic
+from abc import ABC, abstractmethod
 
 from pypipeline.cellio.icellio.io import IO
 
@@ -21,8 +22,9 @@ from pypipeline.cellio.icellio.io import IO
 T = TypeVar('T')
 
 
-class IOutput(IO[T], Generic[T]):
+class IOutput(IO[T], ABC, Generic[T]):
 
+    @abstractmethod
     def set_value(self, value: T) -> None:
         """
         Provide a new value for this IO.
@@ -36,6 +38,7 @@ class IOutput(IO[T], Generic[T]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def all_outgoing_connections_have_pulled(self) -> bool:
         """
         Returns:
