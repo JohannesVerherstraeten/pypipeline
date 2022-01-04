@@ -82,7 +82,7 @@ class Cell2(ASingleCell):
         self.output1: Output[str] = Output(self, "output1")
         self.output2: Output[str] = Output(self, "output2")
         self.config_sleep_time: ConfigParameter[float] = ConfigParameter(self, "sleep_time")
-        self.config_sleep_time.set_value(1.)
+        self.config_sleep_time.set_value(0.2)
         self._sleep_time = None
 
     def supports_scaling(self) -> bool:
@@ -116,7 +116,7 @@ class Cell3(ASingleCell):
         self.output1: Output[str] = Output(self, "output1")
         self.output2: Output[str] = Output(self, "output2")
         self.config_sleep_time: ConfigParameter[float] = ConfigParameter(self, "sleep_time")
-        self.config_sleep_time.set_value(0.5)
+        self.config_sleep_time.set_value(0.1)
         self._sleep_time = None
 
     def supports_scaling(self) -> bool:
@@ -147,7 +147,7 @@ class Cell4(ASingleCell):
         self.input2: Input[str] = Input(self, "input2")
         self.output: Output[str] = Output(self, "output")
         self.config_sleep_time: ConfigParameter[float] = ConfigParameter(self, "sleep_time")
-        self.config_sleep_time.set_value(0.25)
+        self.config_sleep_time.set_value(0.05)
         self._sleep_time = None
 
     def supports_scaling(self) -> bool:
@@ -250,7 +250,7 @@ def test_performance_without_scaling(pipeline_without_scaling: PipelineWithoutSc
     p = pipeline_without_scaling
     p.assert_is_valid()
     p.deploy()
-    num_pulls = 5
+    num_pulls = 50
     t0 = time.time()
     for i in range(num_pulls):
         p.pull()
@@ -308,7 +308,7 @@ def performance_with_scaling(pipeline_with_scaling: PipelineWithScaling,
                              scaling_method: Type[ICloneCell],
                              eps: float = 0.01,
                              disable_sleeps: bool = False,
-                             num_pulls: int = 11) -> None:
+                             num_pulls: int = 50) -> None:
     p = pipeline_with_scaling
     if disable_sleeps:
         p.cell2_scalable.cell2.config_sleep_time.set_value(0)
@@ -376,16 +376,16 @@ def performance_with_scaling(pipeline_with_scaling: PipelineWithScaling,
 
 
 def test_performance_with_thread_scaling(pipeline_with_scaling: PipelineWithScaling) -> None:
-    performance_with_scaling(pipeline_with_scaling, ThreadCloneCell, eps=0.1)
+    performance_with_scaling(pipeline_with_scaling, ThreadCloneCell, eps=0.1, num_pulls=100)
 
 
 def test_performance_with_ray_scaling(pipeline_with_scaling: PipelineWithScaling, ray_init_and_shutdown: None) -> None:
-    performance_with_scaling(pipeline_with_scaling, RayCloneCell, eps=0.1)
+    performance_with_scaling(pipeline_with_scaling, RayCloneCell, eps=0.1, num_pulls=100)
 
 
 def test_performance_regression_with_thread_scaling(pipeline_with_scaling: PipelineWithScaling) -> None:
-    performance_with_scaling(pipeline_with_scaling, ThreadCloneCell, eps=0.1, num_pulls=100, disable_sleeps=True)
+    performance_with_scaling(pipeline_with_scaling, ThreadCloneCell, eps=0.1, num_pulls=500, disable_sleeps=True)
 
 
 def test_performance_regression_with_ray_scaling(pipeline_with_scaling: PipelineWithScaling, ray_init_and_shutdown: None) -> None:
-    performance_with_scaling(pipeline_with_scaling, RayCloneCell, eps=0.1, num_pulls=100, disable_sleeps=True)
+    performance_with_scaling(pipeline_with_scaling, RayCloneCell, eps=0.1, num_pulls=500, disable_sleeps=True)
