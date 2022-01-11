@@ -43,6 +43,8 @@ class CellB(ASingleCell):
         self.config1: ConfigParameter[str] = ConfigParameter[str](self, "config1")
         # self.config1.set_value("myconfig")
         self.param1: RuntimeParameter[np.ndarray] = RuntimeParameter[np.ndarray](self, "param1")
+        # TODO include these parameters in the POST /deploy params?
+        #  -> Otherwise they need to be set with POST /params before deploying is possible
         # self.param1.set_value(np.array([1, 2, 3]))
         self.param2: RuntimeParameter[np.ndarray] = RuntimeParameter[np.ndarray](self, "param2")
         # self.param2.set_value(np.array([4, 5, 6]))
@@ -141,7 +143,7 @@ class ScalableCellBServer(FastAPIServer):
 
 app2 = FastAPI()
 server2 = ScalableCellBServer()
-server2.scalable_cell_b.scale_up(CELL_B_SCALE_UP)       # TODO make endpoint for this?
+server2.scalable_cell_b.scale_up(CELL_B_SCALE_UP)       # TODO make endpoint for this? Or use RuntimeParam?
 server2.create_endpoints(app2)
 # uvicorn.run(app2, host="0.0.0.0", port=8809)
 client2 = TestClient(app2)

@@ -67,7 +67,7 @@ class ExecutionEndpointsFactory(AEndpointFactory):
 
         # TODO input validation
         # TODO better exception handling
-        def execution_body(input_values: PullModelIn) -> PullModelOut:
+        def execution_body_sync(input_values: PullModelIn) -> PullModelOut:
             try:
                 with set_value_lock_to_improve:
                     self.logger.debug(f"FastAPIServer execution body set values")
@@ -108,37 +108,31 @@ class ExecutionEndpointsFactory(AEndpointFactory):
             # !!! in this case multiprocessing locks should be used in the execution body
             # with concurrent.futures.ProcessPoolExecutor() as pool:
 
-            result = await loop.run_in_executor(pool, execution_body, input_values)
+            result = await loop.run_in_executor(pool, execution_body_sync, input_values)
             self.logger.warning(f"Result: {result}")
             return result
 
         has_scalable_cell = self.__server_has_internal_scalable_cell(cell)
 
-        if self.__input_as_form_data:
-            PullModelFormIn = decorate_as_form(PullModelIn)
-
-            if has_scalable_cell:   # use async function definition
-                @app.post("/pull", response_model=PullModelOut, tags=[self.TAG],
-                          description=f"Execute `{cell.get_name()}` with the given inputs. ")
-                async def execute(input_values: PullModelFormIn = Depends(PullModelFormIn.as_form)) -> PullModelOut:
-                    return await execution_body_async(input_values)
+        async def execution_body(input_values: PullModelIn) -> PullModelOut:
+            if has_scalable_cell:       # use async function definition
+                return await execution_body_async(input_values)
             else:
-                @app.post("/pull", response_model=PullModelOut, tags=[self.TAG],
-                          description=f"Execute `{cell.get_name()}` with the given inputs. ")
-                def execute(input_values: PullModelFormIn = Depends(PullModelFormIn.as_form)) -> PullModelOut:
-                    return execution_body(input_values)
+                return execution_body_sync(input_values)
+
+        if self.__input_as_form_data:
+            PullModelFormIn = decorate_as_form(PullModelIn)     # Adds the .as_form() class method
+
+            @app.post("/pull", response_model=PullModelOut, tags=[self.TAG],
+                      description=f"Execute `{cell.get_name()}` with the given inputs. ")
+            async def execute(input_values: PullModelFormIn = Depends(PullModelFormIn.as_form)) -> PullModelOut:
+                return await execution_body(input_values)
 
         else:
-            if has_scalable_cell:   # use async function definition
-                @app.post("/pull", response_model=PullModelOut, tags=[self.TAG],
-                          description=f"Execute `{cell.get_name()}` with the given inputs. ")
-                async def execute(input_values: PullModelIn) -> PullModelOut:
-                    return await execution_body_async(input_values)
-            else:
-                @app.post("/pull", response_model=PullModelOut, tags=[self.TAG],
-                          description=f"Execute `{cell.get_name()}` with the given inputs. ")
-                def execute(input_values: PullModelIn) -> PullModelOut:
-                    return execution_body(input_values)
+            @app.post("/pull", response_model=PullModelOut, tags=[self.TAG],
+                      description=f"Execute `{cell.get_name()}` with the given inputs. ")
+            async def execute(input_values: PullModelIn) -> PullModelOut:
+                return await execution_body(input_values)
 
     @staticmethod
     def _create_pydantic_models(cell: "FastAPIServer",

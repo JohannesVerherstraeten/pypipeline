@@ -80,7 +80,7 @@ class DeploymentEndpointsFactory(AEndpointFactory):
                 if not input_.value_is_set():
                     params_without_default.append(str(input_))
             elif isinstance(input_, RuntimeParameter):
-                if not input_.default_value_is_set():
+                if not input_.default_value_is_set():       # TODO what if provided by an incoming connection?
                     params_without_default.append(str(input_))
         if len(params_without_default) > 0:
             params_pretty = f"- " + "\n- ".join(params_without_default)
