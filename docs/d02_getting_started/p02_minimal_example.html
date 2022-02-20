@@ -1,0 +1,274 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Minimal example &mdash; PyPipeline  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Pipeline basics" href="p03_pipeline_basics.html" />
+    <link rel="prev" title="Installation" href="p01_installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PyPipeline
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d01_overview/overview.html">PyPipeline</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Getting started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="p01_installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Minimal example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p03_pipeline_basics.html">Pipeline basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p04_cell_nesting.html">Cell nesting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p05_scale_up_basics.html">Scale-up basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p06_cell_parameters.html">Cell parameters</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Advanced topics</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p01_architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p02_topology_determination.html">Topology determination</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p03_pull_based_execution.html">Pull-based execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p04_validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p05_scalable_cells_revisited.html">Scalable cells revisited</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p06_performance_tests.html">Performance tests</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Deep learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d04_deep_learning/p01_neural_network_training.html">Neural network training</a></li>
+</ul>
+<p class="caption"><span class="caption-text">PyPipeline Serve</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d05_pypipeline_serve/p01_http_api_generation_basics.html">HTTP API generation basics</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyPipeline</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Minimal example</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/d02_getting_started/p02_minimal_example.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="minimal-example">
+<h1>Minimal example<a class="headerlink" href="#minimal-example" title="Permalink to this headline">¶</a></h1>
+<p>Let’s start with defining the most minimal cell.</p>
+<p>First we import the <code class="docutils literal notranslate"><span class="pre">ASingleCell</span></code> abstract class. This is the class of which most of our self-defined cells
+will inherit. It serves as a base for the most basic type of cells.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pypipeline.cell</span> <span class="kn">import</span> <span class="n">ASingleCell</span>
+</pre></div>
+</div>
+<p>What follows is the definition of our hello world cell. The <code class="docutils literal notranslate"><span class="pre">pull()</span></code> method is the only method that a cell is
+required to implement. It is called when the cell gets executed, and should contain your algorithm code.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">HelloWorldCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello world!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Cells that are created take two arguments: a parent cell and a name. The parent cell is optional, it is used when we
+want to nest cells inside a pipeline object for example. We’ll keep it <code class="docutils literal notranslate"><span class="pre">None</span></code> for now.
+The name of the cell serves as a unique identifier. This name will get more important when building (and debugging)
+more complex pipelines.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span> <span class="o">=</span> <span class="n">HelloWorldCell</span><span class="p">(</span><span class="n">parent_cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_name&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Before starting to pull (=execute) our cell, we first need to deploy it. In this particularly easy case, deployment
+is not strictly needed as the cell doesn’t need to acquire specific resources, but it is good practice to do it anyway.
+It signals PyPipeline that you’re ready building your cell/pipeline, and that you can move on to the execution phase.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span><span class="o">.</span><span class="n">deploy</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Executing the cell is now as easy as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">cell</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Hello world!
+Hello world!
+</pre></div>
+</div>
+<p>That’s it! You successfully executed your first PyPipeline program. You can now pull your cell as much as you want,
+and observe its well-known output.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="p03_pipeline_basics.html" class="btn btn-neutral float-right" title="Pipeline basics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="p01_installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Johannes Verherstraeten.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

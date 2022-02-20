@@ -1,0 +1,305 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>PyPipeline &mdash; PyPipeline  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Installation" href="../d02_getting_started/p01_installation.html" />
+    <link rel="prev" title="Welcome to PyPipeline’s documentation!" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PyPipeline
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Overview</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PyPipeline</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#about">About</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#high-level-overview">High-level overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#on-the-roadmap">On the roadmap</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p01_installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p02_minimal_example.html">Minimal example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p03_pipeline_basics.html">Pipeline basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p04_cell_nesting.html">Cell nesting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p05_scale_up_basics.html">Scale-up basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p06_cell_parameters.html">Cell parameters</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Advanced topics</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p01_architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p02_topology_determination.html">Topology determination</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p03_pull_based_execution.html">Pull-based execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p04_validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p05_scalable_cells_revisited.html">Scalable cells revisited</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p06_performance_tests.html">Performance tests</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Deep learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d04_deep_learning/p01_neural_network_training.html">Neural network training</a></li>
+</ul>
+<p class="caption"><span class="caption-text">PyPipeline Serve</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d05_pypipeline_serve/p01_http_api_generation_basics.html">HTTP API generation basics</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyPipeline</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>PyPipeline</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/d01_overview/overview.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="pypipeline">
+<h1>PyPipeline<a class="headerlink" href="#pypipeline" title="Permalink to this headline">¶</a></h1>
+<p><em>Encapsulate computations, combine them to algorithms, enable pipeline parallelism and scale up.</em></p>
+<div class="section" id="about">
+<h2>About<a class="headerlink" href="#about" title="Permalink to this headline">¶</a></h2>
+<p><strong>PyPipeline provides a toolbox for building and optimizing the throughput of your data processing pipelines.</strong></p>
+<p>The target usecases of PyPipeline are algorithms that process batches or streams of data. Example usecases are
+image- and videostream analysis, financial stock analysis, … It is specifically tailed for training and inference
+of AI-based algorithms, but is in no way limited to the AI domain.</p>
+<dl class="simple">
+<dt>It allows you to:</dt><dd><ul class="simple">
+<li><p><strong>Build your algorithm</strong> as a pipeline of multiple steps.</p></li>
+<li><p><strong>Parallelize</strong> (parts of) your pipeline using multithreading and/or multiprocessing (<a class="reference external" href="https://ray.io/">Ray</a>),
+<strong>without having to care about threadsafety or synchronization</strong>. Switching between the two parallelization methods
+is as easy as changing one parameter.</p></li>
+<li><p><strong>Scale up</strong> parts of your pipeline that are <strong>throughput bottlenecks</strong>. The incoming data is divided over
+multiple clones of these bottlenecks, all working in parallel.</p></li>
+<li><p><strong>Process your data in order of arrival</strong>, even when upstream parts of your pipeline are parallelized and scaled up.
+(Ordered processing is important if some parts of your pipelines are stateful.)</p></li>
+</ul>
+</dd>
+</dl>
+<p>PyPipeline is built with an emphasis on good object-oriented software design, with as primary purpose making the
+code easy to understand, extend and maintain. Its goal is to serve as a solid foundation to deploy and optimize
+your applications in production.</p>
+<p>PyPipeline is licensed under the
+<a class="reference external" href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 license</a>.
+It is actively being developed, but only as a spare time project.
+It is in alpha state, meaning that the interfaces are pretty stable but not yet fixed, and bugs may still occur.
+Please don’t hesitate to submit feature requests, file bug reports, ask questions (for now, you can use Github
+Issues for them all). I’ll try to answer ASAP.</p>
+</div>
+<div class="section" id="high-level-overview">
+<h2>High-level overview<a class="headerlink" href="#high-level-overview" title="Permalink to this headline">¶</a></h2>
+<p>The idea of PyPipeline is to break complex algorithms working on datastreams into multiple pieces called cells.
+Each cell is a computational unit with inputs and/or outputs. These inputs and outputs can be connected with each
+other, to form a pipeline of cells representing your algorithm. The data is forwarded through the pipeline one by
+one or in batch.</p>
+<div class="figure align-default" id="id1">
+<a class="reference internal image-reference" href="../_images/pypipeline-docs-example-tracking-1.png"><img alt="../_images/pypipeline-docs-example-tracking-1.png" src="../_images/pypipeline-docs-example-tracking-1.png" style="width: 625.6px; height: 152.8px;" /></a>
+<p class="caption"><span class="caption-text">An example usecase for PyPipeline: multiple object tracking in videos.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>On top of this structured approach to algorithm building, PyPipeline adds parallelism and upscaling for free.
+Cells can be executed using pipeline parallelism, and bottleneck cells can be duplicated to increase your pipeline’s
+throughput. The framework handles all locking, synchronization, ordering, queuing and threadsafety for you.</p>
+<div class="figure align-default" id="id2">
+<img alt="../_images/pypipeline-docs-example-tracking-2.png" src="../_images/pypipeline-docs-example-tracking-2.png" />
+<p class="caption"><span class="caption-text">The same usecase, but with ScaleUpCells included to allow the scaling up of bottlenecks.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<p>The idea is that cells, inputs, outputs and connections are real objects interacting with
+each other. Incoming data arrives at a cell’s inputs, the cell performs its operation on it, and
+provides the results to its outputs when ready. The connections then route these results to the next cells.</p>
+</div>
+<div class="section" id="on-the-roadmap">
+<h2>On the roadmap<a class="headerlink" href="#on-the-roadmap" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>The following features are on the roadmap for development:</dt><dd><ul class="simple">
+<li><p>Auto-generate a full HTTP interface on top of your pipeline, allowing to serve your pipeline immediately.
+(<strong>Currently being developed</strong>)</p></li>
+<li><p>Clone-specific configuration and resource management (GPU allocation, …) of scale-up cells.</p></li>
+<li><p>A web-based GUI for visualizing and profiling active pipelines: timing info, bottlenecks, …</p></li>
+<li><p>Push-based execution?</p></li>
+</ul>
+</dd>
+</dl>
+<p>Other requests? Let me know!</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../d02_getting_started/p01_installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to PyPipeline’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Johannes Verherstraeten.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,365 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Cell parameters &mdash; PyPipeline  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Architecture" href="../d03_advanced/p01_architecture.html" />
+    <link rel="prev" title="Scale-up basics" href="p05_scale_up_basics.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PyPipeline
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d01_overview/overview.html">PyPipeline</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Getting started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="p01_installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p02_minimal_example.html">Minimal example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p03_pipeline_basics.html">Pipeline basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p04_cell_nesting.html">Cell nesting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p05_scale_up_basics.html">Scale-up basics</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Cell parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#intro">Intro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parameters-in-scalable-cells">Parameters in scalable cells</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Advanced topics</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p01_architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p02_topology_determination.html">Topology determination</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p03_pull_based_execution.html">Pull-based execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p04_validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p05_scalable_cells_revisited.html">Scalable cells revisited</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p06_performance_tests.html">Performance tests</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Deep learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d04_deep_learning/p01_neural_network_training.html">Neural network training</a></li>
+</ul>
+<p class="caption"><span class="caption-text">PyPipeline Serve</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d05_pypipeline_serve/p01_http_api_generation_basics.html">HTTP API generation basics</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyPipeline</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Cell parameters</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/d02_getting_started/p06_cell_parameters.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="cell-parameters">
+<h1>Cell parameters<a class="headerlink" href="#cell-parameters" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="intro">
+<h2>Intro<a class="headerlink" href="#intro" title="Permalink to this headline">¶</a></h2>
+<p>So far we’ve seen two types of cell inputs:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Input</span></code>: the standard input object for cells.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">InputPort</span></code>: the input object for composite cells, allowing data to be routed to internal cells.</p></li>
+</ul>
+<p>Both input types are meant for data to stream through. But in most usecases, algorithms also need parameter-like inputs.
+Parameters are used to configure our algorithm cells, and not necessarily need incoming connections. Instead, they
+can be set manually.</p>
+<p>Therefore, we add two extra types of cell inputs:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RuntimeParameter</span></code>: a parameter of which the value is allowed to change while the pipeline is running. A typical
+example of a runtime parameter would be some threshold.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ConfigParameter</span></code>: a parameter that is only used to configure a cell at pipeline deployment. Typical examples of
+configuration parameters are: a path to a model file to be loaded by a cell, a resource that is assigned to the cell,</p></li>
+</ul>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>The following example shows a simple usecase for both types of parameters.</p>
+<p>The middle cell loads a text file
+from disk containing the <em>Lorem ipsum</em> (a Latin text, often used as dummy text). It will count how often a random
+character, generated by the source cell, appears in the first <em>X</em> characters of the <em>Lorem ipsum</em>. The variable <em>X</em>
+can be modified at runtime.</p>
+<div class="figure align-default" id="id1">
+<img alt="../_images/pypipeline-docs-getting-started-parameters.png" src="../_images/pypipeline-docs-getting-started-parameters.png" />
+<p class="caption"><span class="caption-text">An example pipeline, showing the use of runtime- and configuration parameters (resp. orange and red). It counts
+the number that a random character appears in the first <em>X</em> characters of the <em>Lorem ipsum</em>.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+ <span class="kn">from</span> <span class="nn">pypipeline.cell</span> <span class="kn">import</span> <span class="n">ASingleCell</span>
+<span class="hll"> <span class="kn">from</span> <span class="nn">pypipeline.cellio</span> <span class="kn">import</span> <span class="n">Output</span><span class="p">,</span> <span class="n">Input</span><span class="p">,</span> <span class="n">ConfigParameter</span><span class="p">,</span> <span class="n">RuntimeParameter</span>
+</span> <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+
+ <span class="k">class</span> <span class="nc">LoremIpsumCounterCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ACompositeCell</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+         <span class="nb">super</span><span class="p">(</span><span class="n">LoremIpsumCounterCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+<span class="hll">         <span class="bp">self</span><span class="o">.</span><span class="n">config_file_path</span><span class="p">:</span> <span class="n">ConfigParameter</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="n">ConfigParameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;config_file_path&quot;</span><span class="p">)</span>
+</span><span class="hll">         <span class="bp">self</span><span class="o">.</span><span class="n">param_x</span><span class="p">:</span> <span class="n">RuntimeParameter</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">RuntimeParameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">)</span>
+</span>         <span class="bp">self</span><span class="o">.</span><span class="n">input_character</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;input_char&quot;</span><span class="p">)</span>
+
+         <span class="bp">self</span><span class="o">.</span><span class="n">output_count</span><span class="p">:</span> <span class="n">Output</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;output_count&quot;</span><span class="p">)</span>
+
+         <span class="bp">self</span><span class="o">.</span><span class="n">lorem_ipsum_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="hll">     <span class="k">def</span> <span class="nf">_on_deploy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span>         <span class="nb">super</span><span class="p">(</span><span class="n">LoremIpsumCounterCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_on_deploy</span><span class="p">()</span>
+
+         <span class="n">file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_file_path</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+         <span class="k">assert</span> <span class="n">file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+             <span class="bp">self</span><span class="o">.</span><span class="n">lorem_ipsum_text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="hll">     <span class="k">def</span> <span class="nf">_on_undeploy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span>         <span class="nb">super</span><span class="p">(</span><span class="n">LoremIpsumCounterCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_on_undeploy</span><span class="p">()</span>
+
+         <span class="bp">self</span><span class="o">.</span><span class="n">lorem_ipsum_text</span> <span class="o">=</span> <span class="kc">None</span>
+
+     <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+         <span class="n">char_to_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_character</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_x</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+
+         <span class="n">count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lorem_ipsum_text</span><span class="p">[:</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">char_to_count</span><span class="p">)</span>
+         <span class="n">result</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Character </span><span class="si">{</span><span class="n">char_to_count</span><span class="si">}</span><span class="s2"> appears </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> times in the first </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> characters of the Lorem ipsum.&quot;</span>
+         <span class="bp">self</span><span class="o">.</span><span class="n">output_count</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let’s zoom in a bit. First of all, the parameters are created in exactly the same way as normal inputs our outputs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LoremIpsumCounterCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ACompositeCell</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+       <span class="o">...</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">config_file_path</span><span class="p">:</span> <span class="n">ConfigParameter</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="n">ConfigParameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;config_file_path&quot;</span><span class="p">)</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">param_x</span><span class="p">:</span> <span class="n">RuntimeParameter</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">RuntimeParameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">)</span>
+       <span class="o">...</span>
+</pre></div>
+</div>
+<p>You’ll notice that we’ll often add a prefix to the names of cell IO objects that reflect the type of IO. For example,
+inputs are often named <code class="docutils literal notranslate"><span class="pre">self.input_A</span></code>, outputs <code class="docutils literal notranslate"><span class="pre">self.output_A</span></code>, configuration parameters <code class="docutils literal notranslate"><span class="pre">self.config_A</span></code> and
+runtime parameters <code class="docutils literal notranslate"><span class="pre">self.param_A</span></code>. This is just a personal convention to help with autocompletion, and not imposed
+by PyPipeline in any way.</p>
+<p>The following methods are new:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LoremIpsumCounterCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">_on_deploy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LoremIpsumCounterCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_on_deploy</span><span class="p">()</span>
+
+        <span class="n">file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_file_path</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lorem_ipsum_text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_on_undeploy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LoremIpsumCounterCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_on_undeploy</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lorem_ipsum_text</span> <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p>These methods are called when the cell gets deployed or undeployed. This is the place where your cell should acquire
+resources, if needed. Make sure to always call the <code class="docutils literal notranslate"><span class="pre">deploy()</span></code> or <code class="docutils literal notranslate"><span class="pre">undeploy()</span></code> of the super class as well.</p>
+<p>But why not just load the file in the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> of the cell?</p>
+</div>
+<div class="section" id="parameters-in-scalable-cells">
+<h2>Parameters in scalable cells<a class="headerlink" href="#parameters-in-scalable-cells" title="Permalink to this headline">¶</a></h2>
+<p>Remember that the internal cell in a scalable cell doesn’t do any operation on the data itself. It’s the clones that
+you create when scaling up, that divide the incoming data and perform the operation.</p>
+<p>The reason to make use of the parameter objects is twofold. First of all, as the internal cell itself doesn’t perform
+any operation, it shouldn’t acquire unnecessary resources. Therefore, the <code class="docutils literal notranslate"><span class="pre">deploy()</span></code> method will not be called for
+the internal cell itself, only for its clones.</p>
+<p>Secondly, when using scalable cells, the values of runtime- and configuration parameter objects will be synchronized
+over all clones of the cell. The internal cell acts as a proxy or remote controller to its clones: when you
+change a parameter value in the internal cell, the corresponding parameter values of the clones are adjusted
+accordingly, even when they run in separate processes.</p>
+<div class="figure align-default" id="id2">
+<img alt="../_images/pypipeline-docs-getting-started-parameters-scalable.png" src="../_images/pypipeline-docs-getting-started-parameters-scalable.png" />
+<p class="caption"><span class="caption-text">An example pipeline, showing the use of runtime- and configuration parameters (resp. orange and red) in the context
+of a scalable cell.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../d03_advanced/p01_architecture.html" class="btn btn-neutral float-right" title="Architecture" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="p05_scale_up_basics.html" class="btn btn-neutral float-left" title="Scale-up basics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Johannes Verherstraeten.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

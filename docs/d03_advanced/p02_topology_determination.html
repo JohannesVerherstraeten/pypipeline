@@ -1,0 +1,529 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Topology determination &mdash; PyPipeline  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Pull-based execution" href="p03_pull_based_execution.html" />
+    <link rel="prev" title="Architecture" href="p01_architecture.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PyPipeline
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d01_overview/overview.html">PyPipeline</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p01_installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p02_minimal_example.html">Minimal example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p03_pipeline_basics.html">Pipeline basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p04_cell_nesting.html">Cell nesting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p05_scale_up_basics.html">Scale-up basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p06_cell_parameters.html">Cell parameters</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Advanced topics</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="p01_architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Topology determination</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#source-and-sink-cells">Source- and sink cells</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#directed-acyclic-graphs">Directed Acyclic Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#directed-cyclic-graphs-recurrency">Directed Cyclic Graphs (recurrency)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="p03_pull_based_execution.html">Pull-based execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p04_validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p05_scalable_cells_revisited.html">Scalable cells revisited</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p06_performance_tests.html">Performance tests</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Deep learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d04_deep_learning/p01_neural_network_training.html">Neural network training</a></li>
+</ul>
+<p class="caption"><span class="caption-text">PyPipeline Serve</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d05_pypipeline_serve/p01_http_api_generation_basics.html">HTTP API generation basics</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyPipeline</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Topology determination</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/d03_advanced/p02_topology_determination.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="topology-determination">
+<h1>Topology determination<a class="headerlink" href="#topology-determination" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="source-and-sink-cells">
+<h2>Source- and sink cells<a class="headerlink" href="#source-and-sink-cells" title="Permalink to this headline">¶</a></h2>
+<p>When a pipeline is constructed, PyPipeline will try to determine the topology of its cells.
+Determining the topology includes:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>determining which cells behave as source cells or “data providers”,</p></li>
+<li><p>determining which cells behave as sink cells or “data consumers”,</p></li>
+<li><p>determining a possible topological ordering or “cell execution order”.</p></li>
+</ul>
+</div></blockquote>
+<p>Typically, sources will be executed first, and sinks last. Note that a cell can be both a source and a sink at
+the same time, for example when your pipeline only consists of one cell.</p>
+</div>
+<div class="section" id="directed-acyclic-graphs">
+<h2>Directed Acyclic Graphs<a class="headerlink" href="#directed-acyclic-graphs" title="Permalink to this headline">¶</a></h2>
+<p>The easiest case to do topology determination, is when your cells form a Directed Acyclic Graph (DAG). In this case,
+your pipeline doesn’t have any cycles.</p>
+<p>In a DAG, cells without incoming connections are sources, and cells without outgoing connections are sinks.
+A DAG has the property that it has at least one source and one sink.
+PyPipeline implements Kahn’s algorithm, which is based on this property, to determine all possible topological
+orderings of a pipeline and chooses one of the possibilities.</p>
+<p>Take for example the following pipeline. It has two sources: Cell1 and Cell5, and two sinks: Cell2 and Cell6.
+Multiple topological orderings are possible:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Cell1, Cell2, Cell3, Cell4, Cell5, Cell6</p></li>
+<li><p>Cell1, <strong>Cell3</strong>, <strong>Cell2</strong>, Cell4, Cell5, Cell6</p></li>
+<li><p>and many more…</p></li>
+</ul>
+</div></blockquote>
+<p>As these topological orderings are equivalent (executing the cells in the different orderings will give the
+same result), PyPipeline randomly chooses one of them.</p>
+<div class="figure align-default" id="id1">
+<img alt="../_images/pypipeline-docs-topology-dag.png" src="../_images/pypipeline-docs-topology-dag.png" />
+<p class="caption"><span class="caption-text">A pipeline forming a Directed Acyclic Graph (DAG).</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>PyPipeline offers methods to inspect the topology of your pipeline. See the implementation of the example DAG here.
+Note that the definitions of the cells itself are left out for readability. The full code can be found <strong>here</strong>. TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyPipeline</span><span class="p">(</span><span class="n">Pipeline</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="s2">&quot;Optional[ACompositeCell]&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyPipeline</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell1</span> <span class="o">=</span> <span class="n">Cell1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;c1&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell2</span> <span class="o">=</span> <span class="n">Cell2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;c2&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell3</span> <span class="o">=</span> <span class="n">Cell3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;c3&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell4</span> <span class="o">=</span> <span class="n">Cell4</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;c4&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell5</span> <span class="o">=</span> <span class="n">Cell5</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;c5&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell6</span> <span class="o">=</span> <span class="n">Cell6</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;c6&quot;</span><span class="p">)</span>
+
+        <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell1</span><span class="o">.</span><span class="n">output_1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell2</span><span class="o">.</span><span class="n">input_1</span><span class="p">)</span>
+        <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell1</span><span class="o">.</span><span class="n">output_2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell3</span><span class="o">.</span><span class="n">input_1</span><span class="p">)</span>
+        <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell1</span><span class="o">.</span><span class="n">output_2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell4</span><span class="o">.</span><span class="n">input_2</span><span class="p">)</span>
+        <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell3</span><span class="o">.</span><span class="n">output_1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell4</span><span class="o">.</span><span class="n">input_1</span><span class="p">)</span>
+        <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell3</span><span class="o">.</span><span class="n">output_1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell6</span><span class="o">.</span><span class="n">input_2</span><span class="p">)</span>
+        <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell4</span><span class="o">.</span><span class="n">output_1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell6</span><span class="o">.</span><span class="n">input_3</span><span class="p">)</span>
+        <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell5</span><span class="o">.</span><span class="n">output_1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell6</span><span class="o">.</span><span class="n">input_1</span><span class="p">)</span>
+
+
+<span class="n">my_pipeline</span> <span class="o">=</span> <span class="n">MyPipeline</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;my_pipeline&quot;</span><span class="p">)</span>
+<span class="n">my_pipeline</span><span class="o">.</span><span class="n">deploy</span><span class="p">()</span>
+
+<span class="c1"># Inspect the pipeline topology:</span>
+<span class="c1"># - Print cells in their topological order</span>
+<span class="n">cells_in_topo_ordering</span> <span class="o">=</span> <span class="n">my_pipeline</span><span class="o">.</span><span class="n">get_internal_cells_in_topological_order</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">([</span><span class="n">cell</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">cells_in_topo_ordering</span><span class="p">])</span>
+
+<span class="c1"># - Get a full json description of the topology of your pipeline</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">my_pipeline</span><span class="o">.</span><span class="n">get_topology_description</span><span class="p">())</span>       <span class="c1"># import pprint (library for pretty printing)</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;c1&#39;</span><span class="p">,</span> <span class="s1">&#39;c2&#39;</span><span class="p">,</span> <span class="s1">&#39;c3&#39;</span><span class="p">,</span> <span class="s1">&#39;c4&#39;</span><span class="p">,</span> <span class="s1">&#39;c5&#39;</span><span class="p">,</span> <span class="s1">&#39;c6&#39;</span><span class="p">]</span>
+
+<span class="p">{</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="s1">&#39;MyPipeline(&quot;my_pipeline&quot;)&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;internal_cells_topologically_ordered&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="s1">&#39;Cell1(&quot;c1&quot;)&#39;</span><span class="p">,</span> <span class="s1">&#39;is_sink_cell&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;is_source_cell&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                                          <span class="p">{</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="s1">&#39;Cell2(&quot;c2&quot;)&#39;</span><span class="p">,</span> <span class="s1">&#39;is_sink_cell&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;is_source_cell&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                                          <span class="p">{</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="s1">&#39;Cell3(&quot;c3&quot;)&#39;</span><span class="p">,</span> <span class="s1">&#39;is_sink_cell&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;is_source_cell&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                                          <span class="p">{</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="s1">&#39;Cell4(&quot;c4&quot;)&#39;</span><span class="p">,</span> <span class="s1">&#39;is_sink_cell&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;is_source_cell&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                                          <span class="p">{</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="s1">&#39;Cell5(&quot;c5&quot;)&#39;</span><span class="p">,</span> <span class="s1">&#39;is_sink_cell&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;is_source_cell&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                                          <span class="p">{</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="s1">&#39;Cell6(&quot;c6&quot;)&#39;</span><span class="p">,</span> <span class="s1">&#39;is_sink_cell&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;is_source_cell&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}],</span>
+ <span class="s1">&#39;internal_connections&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;connection&#39;</span><span class="p">:</span> <span class="s1">&#39;Connection(Cell1(&quot;c1&quot;).Output(&quot;o1&quot;), Cell2(&quot;c2&quot;).Input(&quot;i1&quot;))&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;is_inter_cell_connection&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;is_recurrent&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                          <span class="p">{</span><span class="s1">&#39;connection&#39;</span><span class="p">:</span> <span class="s1">&#39;Connection(Cell1(&quot;c1&quot;).Output(&quot;o2&quot;), Cell3(&quot;c3&quot;).Input(&quot;i1&quot;))&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;is_inter_cell_connection&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;is_recurrent&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                          <span class="p">{</span><span class="s1">&#39;connection&#39;</span><span class="p">:</span> <span class="s1">&#39;Connection(Cell1(&quot;c1&quot;).Output(&quot;o2&quot;), Cell4(&quot;c4&quot;).Input(&quot;i2&quot;))&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;is_inter_cell_connection&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;is_recurrent&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                          <span class="p">{</span><span class="s1">&#39;connection&#39;</span><span class="p">:</span> <span class="s1">&#39;Connection(Cell3(&quot;c3&quot;).Output(&quot;o1&quot;), Cell4(&quot;c4&quot;).Input(&quot;i1&quot;))&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;is_inter_cell_connection&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;is_recurrent&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                          <span class="p">{</span><span class="s1">&#39;connection&#39;</span><span class="p">:</span> <span class="s1">&#39;Connection(Cell3(&quot;c3&quot;).Output(&quot;o1&quot;), Cell6(&quot;c6&quot;).Input(&quot;i2&quot;))&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;is_inter_cell_connection&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;is_recurrent&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                          <span class="p">{</span><span class="s1">&#39;connection&#39;</span><span class="p">:</span> <span class="s1">&#39;Connection(Cell4(&quot;c4&quot;).Output(&quot;o1&quot;), Cell6(&quot;c6&quot;).Input(&quot;i3&quot;))&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;is_inter_cell_connection&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;is_recurrent&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                          <span class="p">{</span><span class="s1">&#39;connection&#39;</span><span class="p">:</span> <span class="s1">&#39;Connection(Cell5(&quot;c5&quot;).Output(&quot;o1&quot;), Cell6(&quot;c6&quot;).Input(&quot;i1&quot;))&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;is_inter_cell_connection&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;is_recurrent&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}],</span>
+ <span class="s1">&#39;is_sink_cell&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+ <span class="s1">&#39;is_source_cell&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>By chance, the chosen topological ordering is the same as the ordering of definition. Also note that the last two lines
+indicate that the cell <code class="docutils literal notranslate"><span class="pre">MyPipeline(&quot;my_pipeline&quot;)</span></code> is both a source and a sink cell, as it has no incoming or
+outgoing connections.</p>
+</div>
+<div class="section" id="directed-cyclic-graphs-recurrency">
+<h2>Directed Cyclic Graphs (recurrency)<a class="headerlink" href="#directed-cyclic-graphs-recurrency" title="Permalink to this headline">¶</a></h2>
+<p>The fun starts when we want to determine the topology of pipelines with recurrent connections (cycles). Recurrent
+connections occur when the output of a cell should be provided as an input to a previous cell during the next pass.</p>
+<p>The following pipeline shows a recurrent connection. In this case, Kahn’s algorithm would still work, since the
+source still has no incoming connections, and the sink no outgoing ones.</p>
+<div class="figure align-default" id="id2">
+<img alt="../_images/pypipeline-docs-topology-recurrent.png" src="../_images/pypipeline-docs-topology-recurrent.png" />
+<p class="caption"><span class="caption-text">A pipeline forming a Directed Cyclic Graph.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<div class="section" id="example-fibonacci-pipeline">
+<h3>Example: Fibonacci pipeline<a class="headerlink" href="#example-fibonacci-pipeline" title="Permalink to this headline">¶</a></h3>
+<p>The following <em>Fibonacci</em> pipeline on the other hand, is not that trivial anymore. This example pipeline generates the
+Fibonacci series: <code class="docutils literal notranslate"><span class="pre">0,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">5,</span> <span class="pre">8,</span> <span class="pre">13,</span> <span class="pre">21,</span> <span class="pre">34,...</span></code> Each number in this series is equal to the sum of the two
+previous numbers, starting with 0 and 1.</p>
+<dl class="simple">
+<dt>We define the pipeline as follows:</dt><dd><ul class="simple">
+<li><p>a memory cell, outputting its input of the previous timestep,</p></li>
+<li><p>a Fibonacci cell, outputting the sum of its two input values.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="figure align-default" id="id3">
+<img alt="../_images/pypipeline-docs-topology-fibonacci.png" src="../_images/pypipeline-docs-topology-fibonacci.png" />
+<p class="caption"><span class="caption-text">A recurrent pipeline, generating the Fibonacci series.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+<p>Let’s give it a first try:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">pypipeline.cell</span> <span class="kn">import</span> <span class="n">Pipeline</span><span class="p">,</span> <span class="n">ASingleCell</span><span class="p">,</span> <span class="n">ACompositeCell</span>
+<span class="kn">from</span> <span class="nn">pypipeline.cellio</span> <span class="kn">import</span> <span class="n">Input</span><span class="p">,</span> <span class="n">Output</span>
+<span class="kn">from</span> <span class="nn">pypipeline.connection</span> <span class="kn">import</span> <span class="n">Connection</span>
+
+
+<span class="k">class</span> <span class="nc">MemoryCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ACompositeCell</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MemoryCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;input&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">:</span> <span class="n">Output</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_input_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prev_input_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_input_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">FibonacciCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="s2">&quot;Optional[ACompositeCell]&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FibonacciCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_minus_one</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;t_minus_one&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_minus_two</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;t_minus_two&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">:</span> <span class="n">Output</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tmin2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_minus_two</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="n">tmin1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_minus_one</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">tmin2</span> <span class="o">+</span> <span class="n">tmin1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">FibonacciPipeline</span><span class="p">(</span><span class="n">Pipeline</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="s2">&quot;Optional[ACompositeCell]&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FibonacciPipeline</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fib</span><span class="p">:</span> <span class="n">FibonacciCell</span> <span class="o">=</span> <span class="n">FibonacciCell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;fib&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mem</span><span class="p">:</span> <span class="n">MemoryCell</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">MemoryCell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;mem&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">c1</span> <span class="o">=</span> <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fib</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fib</span><span class="o">.</span><span class="n">t_minus_one</span><span class="p">)</span>          <span class="c1"># first recurrent connection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c2</span> <span class="o">=</span> <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fib</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mem</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>                <span class="c1"># second recurrent connection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c3</span> <span class="o">=</span> <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mem</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fib</span><span class="o">.</span><span class="n">t_minus_two</span><span class="p">)</span>
+
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">FibonacciPipeline</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Fibonacci_pipeline&quot;</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">deploy</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>pypipeline.exceptions.IndeterminableTopologyException:
+FibonacciPipeline(&quot;Fibonacci_pipeline&quot;): Could not determine a topological order.
+This is probably caused by a recurrent connection which has no initial_value at
+its start. Make sure you provide an initial value `Output(self, &#39;output&#39;, initial_value=&lt;value&gt;)`
+when creating an output that might provide an input for a next time step.
+</pre></div>
+</div>
+<p>Woops! PyPipeline could not determine the pipeline topology, and raises an exception. It doesn’t know in which order
+the cells should be executed, and could therefore not determine which cells are sources/sinks, and which connections
+are recurrent or not.</p>
+<p>Luckily, the error message gives us a hint towards the solution! We forgot to add the boundary conditions: the fact
+that the first two values must be 0 and 1. We should provide one of the initial values at the output where the
+recurrent connections start. The other one will be used to initialize the memory cell.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MemoryCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="s2">&quot;Optional[ACompositeCell]&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MemoryCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;input&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">:</span> <span class="n">Output</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">)</span>
+<span class="hll">        <span class="bp">self</span><span class="o">.</span><span class="n">prev_input_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+</span>
+    <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prev_input_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_input_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">FibonacciCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="s2">&quot;Optional[ACompositeCell]&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FibonacciCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_minus_one</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;t_minus_one&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_minus_two</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;t_minus_two&quot;</span><span class="p">)</span>
+<span class="hll">        <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">:</span> <span class="n">Output</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span>
+    <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tmin2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_minus_two</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="n">tmin1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_minus_one</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">tmin2</span> <span class="o">+</span> <span class="n">tmin1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">FibonacciPipeline</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Fibonacci_pipeline&quot;</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">deploy</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+    <span class="n">pipeline</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">pipeline</span><span class="o">.</span><span class="n">fib</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span>
+<span class="mi">2</span>
+<span class="mi">3</span>
+<span class="mi">5</span>
+<span class="mi">8</span>
+<span class="mi">13</span>
+<span class="mi">21</span>
+<span class="mi">34</span>
+</pre></div>
+</div>
+<p>Hurray! Because of the initial value at the output <em>t</em>, PyPipeline knows that the two outgoing connections
+may be recurrent ones. In that case, the topology is determined, and the pipeline can be executed.</p>
+<p>Let’s take a look at the topology description output as well. Note that the correct connections are marked as
+recurrent. Also note that the memory cell is marked as source (even though it has incoming connections) and
+the Fibonacci cell is marked as a sink (even though it has outgoing connections. In this pipeline, they function as
+a source and sink respectively. This is also reflected by the topological order: the memory cell needs to be executed
+first, before the Fibonacci cell.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="s1">&#39;FibonacciPipeline(&quot;Fibonacci_pipeline&quot;)&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;internal_cells_topologically_ordered&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="s1">&#39;MemoryCell(&quot;mem&quot;)&#39;</span><span class="p">,</span> <span class="s1">&#39;is_sink_cell&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;is_source_cell&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                                          <span class="p">{</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="s1">&#39;FibonacciCell(&quot;fib&quot;)&#39;</span><span class="p">,</span> <span class="s1">&#39;is_sink_cell&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;is_source_cell&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}],</span>
+ <span class="s1">&#39;internal_connections&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;connection&#39;</span><span class="p">:</span> <span class="s1">&#39;Connection(FibonacciCell(&quot;fib&quot;).Output(&quot;t&quot;), FibonacciCell(&quot;fib&quot;).Input(&quot;t_minus_one&quot;))&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;is_inter_cell_connection&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;is_recurrent&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                          <span class="p">{</span><span class="s1">&#39;connection&#39;</span><span class="p">:</span> <span class="s1">&#39;Connection(FibonacciCell(&quot;fib&quot;).Output(&quot;t&quot;), MemoryCell(&quot;mem&quot;).Input(&quot;input&quot;))&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;is_inter_cell_connection&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;is_recurrent&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                          <span class="p">{</span><span class="s1">&#39;connection&#39;</span><span class="p">:</span> <span class="s1">&#39;Connection(MemoryCell(&quot;mem&quot;).Output(&quot;output&quot;), FibonacciCell(&quot;fib&quot;).Input(&quot;t_minus_two&quot;))&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;is_inter_cell_connection&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;is_recurrent&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}],</span>
+ <span class="s1">&#39;is_sink_cell&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+ <span class="s1">&#39;is_source_cell&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="explicitly-marking-connections-as-non-recurrent">
+<h3>Explicitly marking connections as (non) recurrent<a class="headerlink" href="#explicitly-marking-connections-as-non-recurrent" title="Permalink to this headline">¶</a></h3>
+<p>Say that you’d like to really confuse PyPipeline by providing an initial value to the output of the memory cell as
+well. In that case, both cells could again be executed first, and the right topology is again not determined anymore.
+In this case, PyPipeline will raise the following exception:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>pypipeline.exceptions.IndeterminableTopologyException: FibonacciPipeline(&quot;Fibonacci_pipeline&quot;):
+Multiple topological orderings of the internal cells are possible, of which some have different
+recurrent connections. So the ordering in which the internal cells must be executed is undetermined.
+
+Connections which can be interpreted both recurrent/not-recurrent are:
+ * Connection(FibonacciCell(&quot;fib&quot;).Output(&quot;t&quot;), MemoryCell(&quot;mem&quot;).Input(&quot;input&quot;))
+ * Connection(MemoryCell(&quot;mem&quot;).Output(&quot;output&quot;), FibonacciCell(&quot;fib&quot;).Input(&quot;t_minus_two&quot;)).
+Try adding this parameter to the connection:
+Connection(source, target, explicitly_mark_as_recurrent=&lt;bool&gt;)
+</pre></div>
+</div>
+<p>Again, the error message gives us a hint on how to solve the issue: we can add a parameter to the connection
+to explicitly mark it as recurrent (True) or non-recurrent (False). PyPipeline will prune all possible
+topological orders that don’t satisfy these requirements. If only one topology remains (or multiple equivalent ones),
+the topology is again defined, and the pipeline can be pulled again.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="p03_pull_based_execution.html" class="btn btn-neutral float-right" title="Pull-based execution" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="p01_architecture.html" class="btn btn-neutral float-left" title="Architecture" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Johannes Verherstraeten.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,463 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Pipeline basics &mdash; PyPipeline  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Cell nesting" href="p04_cell_nesting.html" />
+    <link rel="prev" title="Minimal example" href="p02_minimal_example.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PyPipeline
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d01_overview/overview.html">PyPipeline</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Getting started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="p01_installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p02_minimal_example.html">Minimal example</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Pipeline basics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pipeline-example">Pipeline example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-by-step">Step-by-step</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="p04_cell_nesting.html">Cell nesting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p05_scale_up_basics.html">Scale-up basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p06_cell_parameters.html">Cell parameters</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Advanced topics</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p01_architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p02_topology_determination.html">Topology determination</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p03_pull_based_execution.html">Pull-based execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p04_validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p05_scalable_cells_revisited.html">Scalable cells revisited</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d03_advanced/p06_performance_tests.html">Performance tests</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Deep learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d04_deep_learning/p01_neural_network_training.html">Neural network training</a></li>
+</ul>
+<p class="caption"><span class="caption-text">PyPipeline Serve</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d05_pypipeline_serve/p01_http_api_generation_basics.html">HTTP API generation basics</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyPipeline</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Pipeline basics</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/d02_getting_started/p03_pipeline_basics.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="pipeline-basics">
+<h1>Pipeline basics<a class="headerlink" href="#pipeline-basics" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="pipeline-example">
+<h2>Pipeline example<a class="headerlink" href="#pipeline-example" title="Permalink to this headline">¶</a></h2>
+<p>Let’s now build the following pipeline:</p>
+<div class="figure align-default" id="id1">
+<img alt="../_images/pypipeline-docs-getting-started-pipeline_new.png" src="../_images/pypipeline-docs-getting-started-pipeline_new.png" />
+<p class="caption"><span class="caption-text">A simple pipeline that produces two integers, multiplies them, and prints the result to screen.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>You can find the full implementation of this pipeline here, a step-by-step explanation is given afterwards.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">pypipeline.cell</span> <span class="kn">import</span> <span class="n">ASingleCell</span><span class="p">,</span> <span class="n">ACompositeCell</span><span class="p">,</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">pypipeline.cellio</span> <span class="kn">import</span> <span class="n">Output</span><span class="p">,</span> <span class="n">Input</span>
+<span class="kn">from</span> <span class="nn">pypipeline.connection</span> <span class="kn">import</span> <span class="n">Connection</span>
+
+
+<span class="k">class</span> <span class="nc">SourceCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ACompositeCell</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SourceCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_1</span><span class="p">:</span> <span class="n">Output</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;first_output&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_2</span><span class="p">:</span> <span class="n">Output</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;second_output&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">value_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span>
+        <span class="n">value_2</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_1</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value_1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_2</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value_2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+
+<span class="k">class</span> <span class="nc">MultiplierCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ACompositeCell</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MultiplierCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="c1"># Note that we leave out the redundant `cell=` and `name=` keywords from here on...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_a</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;input_a&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_b</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;input_b&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">:</span> <span class="n">Output</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">value_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_a</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="n">value_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_b</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">value_a</span> <span class="o">*</span> <span class="n">value_b</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">PrinterCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ACompositeCell</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PrinterCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;printer_input&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">MyPipeline</span><span class="p">(</span><span class="n">Pipeline</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ACompositeCell</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyPipeline</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">SourceCell</span><span class="p">(</span><span class="n">parent_cell</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">)</span>
+        <span class="c1"># Note that we leave out the redundant `parent_cell=` and `name=` keywords from here on...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">=</span> <span class="n">MultiplierCell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;multiplier&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">printer</span> <span class="o">=</span> <span class="n">PrinterCell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;printer&quot;</span><span class="p">)</span>
+
+        <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">output_1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span><span class="o">.</span><span class="n">input_a</span><span class="p">)</span>
+        <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">output_2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span><span class="o">.</span><span class="n">input_b</span><span class="p">)</span>
+        <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">printer</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
+
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">MyPipeline</span><span class="p">(</span><span class="n">parent_cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_pipeline&quot;</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">deploy</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">pipeline</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-by-step">
+<h2>Step-by-step<a class="headerlink" href="#step-by-step" title="Permalink to this headline">¶</a></h2>
+<p>Let’s break down the implementation line by line.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">pypipeline.cell</span> <span class="kn">import</span> <span class="n">ASingleCell</span><span class="p">,</span> <span class="n">ACompositeCell</span><span class="p">,</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">pypipeline.cellio</span> <span class="kn">import</span> <span class="n">Output</span><span class="p">,</span> <span class="n">Input</span>
+<span class="kn">from</span> <span class="nn">pypipeline.connection</span> <span class="kn">import</span> <span class="n">Connection</span>
+</pre></div>
+</div>
+<p>You’ll notice that PyPipeline heavily uses the python type hinting functionality
+(<a class="reference external" href="https://stackoverflow.com/questions/32557920/what-are-type-hints-in-python-3-5">what is type hinting?</a>).
+This is never an obligation, but it helps a lot to find bugs sooner. In this case we
+use the <code class="docutils literal notranslate"><span class="pre">Optional[Type]</span></code> type hint, to denote that a variable may be of type <code class="docutils literal notranslate"><span class="pre">Type</span></code> or None.
+The other imports show the 3 main building blocks of PyPipeline: cells, cell io (inputs and outputs) and connections.</p>
+<div class="section" id="sourcecell">
+<h3>SourceCell<a class="headerlink" href="#sourcecell" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SourceCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ACompositeCell</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SourceCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_1</span><span class="p">:</span> <span class="n">Output</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;first_output&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_2</span><span class="p">:</span> <span class="n">Output</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;second_output&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">value_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span>
+        <span class="n">value_2</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_1</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value_1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_2</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value_2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>The source cell overrides the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> to add some extra properties. More specifically, it adds two output
+objects and a counter value. The first output is stored at <code class="docutils literal notranslate"><span class="pre">self.output_1</span></code>. You can give it any name you want,
+this attribute name has no specific meaning to PyPipeline. You only need it to be able to make connections from
+it later on.  Our output objects have type <code class="docutils literal notranslate"><span class="pre">Output[int]</span></code> meaning that they will output integer values. They’re
+created with a reference to the cell itself (=``self``) and a name: <code class="docutils literal notranslate"><span class="pre">Output(self,</span> <span class="pre">&quot;some_name&quot;)</span></code>. Again, the name
+is internally used as unique identifier, therefore a cell cannot have multiple inputs or outputs with the same name.</p>
+<p>During its pull, the cell generates two values, provides these values to the outputs, and increments the counter by
+one. All connections that will be made to an output, will be able to forward its value to the next cells.</p>
+<p>Do you find the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> rather verbose because of the type hinting? Note that, although it is encouraged as good
+practice, you are completely free in using it. PyPipeline will work just as well without it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SourceCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SourceCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="c1"># You can also leave out the redundant `cell=` and `name=` keywords:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_1</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;first_output&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_2</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;second_output&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="multipliercell">
+<h3>MultiplierCell<a class="headerlink" href="#multipliercell" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MultiplierCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ACompositeCell</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MultiplierCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="c1"># Note that we leave out the redundant `cell=` and `name=` keywords from here on...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_a</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;input_a&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_b</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;input_b&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">:</span> <span class="n">Output</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">value_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_a</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="n">value_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_b</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">value_a</span> <span class="o">*</span> <span class="n">value_b</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Our multiplier has both an input and output. During a pull, the multiplier will pull its input to request the next
+input value, it will multiply the value by 2, and set the output value to the result.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>During a pull, a cell must pull its inputs, perform its functionality, and set its outputs.</p>
+</div>
+<p>This gives away the execution strategy that PyPipeline uses to execute multi-cell pipelines: pull-based execution.</p>
+<ol class="arabic simple">
+<li><p>A cell pulls its inputs one by one,</p></li>
+<li><p>When an input is pulled, it will pull its incoming connection,</p></li>
+<li><p>When a connection is pulled, it pulls its exit point (usually the output of the previous cell),</p></li>
+<li><p>When an output is pulled, it will check whether its value is already set, or will pull the cell to which it belongs.</p></li>
+</ol>
+<p>This way, when a pull is performed on the last cell in your pipeline, it propagates back up to the first cells, just
+like you would pull water through a pipeline using negative pressure. More about this topic will follow later.</p>
+</div>
+<div class="section" id="printercell">
+<h3>PrinterCell<a class="headerlink" href="#printercell" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PrinterCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ACompositeCell</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PrinterCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;printer_input&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This cell is nothing special anymore. Let’s put all cells together into a pipeline!</p>
+</div>
+<div class="section" id="putting-it-all-together">
+<h3>Putting it all together<a class="headerlink" href="#putting-it-all-together" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyPipeline</span><span class="p">(</span><span class="n">Pipeline</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ACompositeCell</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyPipeline</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">SourceCell</span><span class="p">(</span><span class="n">parent_cell</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">)</span>
+        <span class="c1"># Note that we leave out the redundant `parent_cell=` and `name=` keywords from here on...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">=</span> <span class="n">MultiplierCell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;multiplier&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">printer</span> <span class="o">=</span> <span class="n">PrinterCell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;printer&quot;</span><span class="p">)</span>
+
+        <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">output_1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span><span class="o">.</span><span class="n">input_a</span><span class="p">)</span>
+        <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">output_2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span><span class="o">.</span><span class="n">input_b</span><span class="p">)</span>
+        <span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">printer</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As you can see, a pipeline doesn’t inherit from <code class="docutils literal notranslate"><span class="pre">ASingleCell</span></code> but from the <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> class. Our pipeline
+creates an instance of each of our three cells. Note that this time, the <code class="docutils literal notranslate"><span class="pre">parent_cell</span></code> of these three is the pipeline
+itself instead of None. The cells are “nested” inside the pipeline, also called “the internal cells” of <code class="docutils literal notranslate"><span class="pre">MyPipeline</span></code>.</p>
+<p>The pipeline also defines the connections between the inputs and outputs of its internal cells. These connections are
+unidirectional: they’ll channel data from the first argument to the second one.</p>
+<p>Ok we’ve everything we need, let’s instantiate our pipeline and start executing it!</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">MyPipeline</span><span class="p">(</span><span class="n">parent_cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_pipeline&quot;</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">deploy</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">pipeline</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Note that we didn’t define the <code class="docutils literal notranslate"><span class="pre">_on_pull()</span></code> method for our pipeline. This is already defined in the <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> class
+itself. It will make sure that all cells are pulled in the right order.</p>
+<p>Output:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>0
+-1
+2
+-3
+4
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="p04_cell_nesting.html" class="btn btn-neutral float-right" title="Cell nesting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="p02_minimal_example.html" class="btn btn-neutral float-left" title="Minimal example" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Johannes Verherstraeten.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

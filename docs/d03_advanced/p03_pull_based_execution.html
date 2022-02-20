@@ -1,0 +1,383 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Pull-based execution &mdash; PyPipeline  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Validation" href="p04_validation.html" />
+    <link rel="prev" title="Topology determination" href="p02_topology_determination.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PyPipeline
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d01_overview/overview.html">PyPipeline</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p01_installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p02_minimal_example.html">Minimal example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p03_pipeline_basics.html">Pipeline basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p04_cell_nesting.html">Cell nesting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p05_scale_up_basics.html">Scale-up basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p06_cell_parameters.html">Cell parameters</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Advanced topics</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="p01_architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p02_topology_determination.html">Topology determination</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Pull-based execution</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#concept">Concept</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#general-rules">General rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-control-flow">Advanced control flow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="p04_validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p05_scalable_cells_revisited.html">Scalable cells revisited</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p06_performance_tests.html">Performance tests</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Deep learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d04_deep_learning/p01_neural_network_training.html">Neural network training</a></li>
+</ul>
+<p class="caption"><span class="caption-text">PyPipeline Serve</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d05_pypipeline_serve/p01_http_api_generation_basics.html">HTTP API generation basics</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyPipeline</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Pull-based execution</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/d03_advanced/p03_pull_based_execution.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="pull-based-execution">
+<h1>Pull-based execution<a class="headerlink" href="#pull-based-execution" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="concept">
+<h2>Concept<a class="headerlink" href="#concept" title="Permalink to this headline">¶</a></h2>
+<p>Pipelines are executed in a pull-based way. This is similar to a water pipeline system: you open the water tap,
+and because of the negative pressure outside of the pipeline (wrt the inside), water gets pulled out. This
+creates a negative pressure inside the water tap itself, causing water to be pulled from the whole pipeline system
+to the tap.</p>
+<p>PyPipeline processes data streams in a similar way. Pulling always starts at the sink cells, the last cells in your
+pipeline. A cell that is being pulled, pulls its inputs as a way to request a new input value. Some inputs (ex:
+<code class="docutils literal notranslate"><span class="pre">RuntimeParameter</span></code>) can provide a value immediately. Other inputs (ex: <code class="docutils literal notranslate"><span class="pre">Input</span></code>) will pull their incoming connection
+to request their new value. The connections pull the outputs from where they leave, requesting the cell before it to
+pull as well. This pulling propagates back up to the source cells that effectively provide the data.</p>
+<div class="figure align-default" id="id1">
+<img alt="../_images/pypipeline-docs-pulling-a.gif" src="../_images/pypipeline-docs-pulling-a.gif" />
+<p class="caption"><span class="caption-text">This gif shows the pull propagation in a pipeline. Red: busy with pulling. Yellow: ready pulling.
+Note how output objects remember which connection already have pulled and which haven’t.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+<div class="section" id="general-rules">
+<h2>General rules<a class="headerlink" href="#general-rules" title="Permalink to this headline">¶</a></h2>
+<p>The following rules make sure that, when cells get parallelized and scaled up over multiple threads and processes, no
+cell misses parts of the input data or sees the same input data twice.</p>
+<p><strong>When a cell is pulled, it should pull its inputs, execute its operation, and set its outputs.</strong></p>
+<p><strong>Pulling an output object as a connection, is threadsafe.</strong></p>
+<p>It is safe for multiple connections to pull the same output object from different threads. The pulls will be
+handled one after another, while next ones will be blocked until it’s their turn.</p>
+<p><strong>Output objects keep track of which connections already have pulled and which haven’t.</strong></p>
+<p>If an output object is being pulled by a connection, the pull will be blocked if any other connection still has to
+pull the previous value. In other words: every connection from an output object can successfully pull exactly once,
+before any of them can pull again. Every connection pulling before its turn, gets blocked until all others have pulled.
+While a pulling connection is blocked, other connections may pull from different threads.</p>
+<p><strong>Pulling a cell as an output object, is threadsafe.</strong></p>
+<p>It is safe for multiple output objects of a cell, to pull to pull that cell from different threads. The pulls will be
+handled one after another, while the next ones will be blocked until it’s their turn.</p>
+</div>
+<div class="section" id="advanced-control-flow">
+<h2>Advanced control flow<a class="headerlink" href="#advanced-control-flow" title="Permalink to this headline">¶</a></h2>
+<p>In some cases, you might want to deviate from the standard “pull inputs, perform operation, set outputs” flow.
+For example:</p>
+<ul class="simple">
+<li><p>a batching cell: the cell pulls its input multiple times, and sets its output with a concatenation of the inputs.</p></li>
+<li><p>a patching cell; the cell pulls its input, and sets its output multiple times with a part of the input value.</p></li>
+</ul>
+<p>This is possible in PyPipeline. Example implementations of these two types of cells:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">pypipeline.cell</span> <span class="kn">import</span> <span class="n">ASingleCell</span><span class="p">,</span> <span class="n">ACompositeCell</span>
+<span class="kn">from</span> <span class="nn">pypipeline.cellio</span> <span class="kn">import</span> <span class="n">Input</span><span class="p">,</span> <span class="n">Output</span><span class="p">,</span> <span class="n">RuntimeParameter</span>
+
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">BatchingCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This cell requests X elements, where X is the batch size, and outputs them as a list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="s2">&quot;Optional[ACompositeCell]&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BatchingCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">param_batch_size</span><span class="p">:</span> <span class="n">RuntimeParameter</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">RuntimeParameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;batch_size&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;input&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_batch</span><span class="p">:</span> <span class="n">Output</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;batch&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_batch_size</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+
+        <span class="n">batch</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+            <span class="n">batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_batch</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">PatchingCell</span><span class="p">(</span><span class="n">ASingleCell</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This cell requests a list of elements, and outputs them one by one.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_cell</span><span class="p">:</span> <span class="s2">&quot;Optional[ACompositeCell]&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PatchingCell</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent_cell</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_batch</span><span class="p">:</span> <span class="n">Input</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;batch&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_value</span><span class="p">:</span> <span class="n">Output</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="n">Output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_previous_batch</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">_on_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_previous_batch</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_previous_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_batch</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_previous_batch</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_value</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Important notes on advanced control flow:</p>
+<ol class="arabic simple">
+<li><p><strong>Advanced control flow can cause deadlocks (=pulling the pipeline blocks infinitely).</strong></p></li>
+</ol>
+<div class="figure align-default" id="id2">
+<img alt="../_images/pypipeline-docs-pulling-gif-pipeline.png" src="../_images/pypipeline-docs-pulling-gif-pipeline.png" />
+<p class="caption"><span class="caption-text">This is an example of a pipeline that uses the <code class="docutils literal notranslate"><span class="pre">BatchingCell</span></code> correctly. The video source will be
+pulled X times by the batching cell, after which the batching cell returns a list of frames.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<div class="figure align-default" id="id3">
+<img alt="../_images/pypipeline-docs-pulling-gif-pipeline-blocking.png" src="../_images/pypipeline-docs-pulling-gif-pipeline-blocking.png" />
+<p class="caption"><span class="caption-text">This is an example of a pipeline that will cause a deadlock. The batching cell will try to pull
+the video source X times, but the 2nd pull will block, as the source cell has an outgoing connection
+that has not yet pulled. The skip connection will only be pulled when the batch cell is ready, and
+the batch cell will only get ready, when the skip connection gets pulled (X times). Therefore, the
+pipeline is in deadlock.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+<div class="figure align-default" id="id4">
+<img alt="../_images/pypipeline-docs-pulling-gif-pipeline-blocking-2.png" src="../_images/pypipeline-docs-pulling-gif-pipeline-blocking-2.png" />
+<p class="caption"><span class="caption-text">This is another example of a pipeline that will cause a deadlock. This time the output object of the
+video source cannot be pulled multiple times, without the skip connection being pulled as well.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</div>
+<ol class="arabic" start="2">
+<li><p><strong>Scalable cells don’t support advanced control flow.</strong></p>
+<p>The internal cell of a scalable cell must pull its inputs and set its outputs exactly once per pull.
+If not, ex. the internal cell exhibits advanced control flow, the scalable cell will enter a deadlock
+situation when being pulled.</p>
+<p>However, if the internal cell is a pipeline, that pipeline may contain cells that exhibit advanced
+control flow, <em>as long as the pipeline itself does not</em>.</p>
+</li>
+</ol>
+<div class="figure align-default" id="id5">
+<img alt="../_images/pypipeline-docs-pulling-advanced-scalablecell-blocking-3.png" src="../_images/pypipeline-docs-pulling-advanced-scalablecell-blocking-3.png" />
+<p class="caption"><span class="caption-text">Example of an invalid pipeline: the internal cell exhibits advanced control flow. The idea of this pipeline
+is as follows: the source provides batches of data, which are unpacked (patched) and packed again (batched)
+such that the prediction cell can predict on single elements at a time. As the patching cell must be pulled
+X times before it will pull its inputs, it will cause a deadlock in the scalable cell.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</div>
+<div class="figure align-default" id="id6">
+<img alt="../_images/pypipeline-docs-pulling-advanced-scalablecell-blocking-2.png" src="../_images/pypipeline-docs-pulling-advanced-scalablecell-blocking-2.png" />
+<p class="caption"><span class="caption-text">Another example of an invalid pipeline: the internal cell is a pipeline, but this pipeline still exhibits
+advanced control flow.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</div>
+<div class="figure align-default" id="id7">
+<img alt="../_images/pypipeline-docs-pulling-advanced-scalablecell.png" src="../_images/pypipeline-docs-pulling-advanced-scalablecell.png" />
+<p class="caption"><span class="caption-text">Example of a valid pipeline: the internal cell is a pipeline which contains cells with advanced control
+flow, but the pipeline itself does not. This is allowed, as the patch prediction pipeline on the outside doesn’t
+show signs of advanced control flow: it provides a single output for every input.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="p04_validation.html" class="btn btn-neutral float-right" title="Validation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="p02_topology_determination.html" class="btn btn-neutral float-left" title="Topology determination" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Johannes Verherstraeten.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

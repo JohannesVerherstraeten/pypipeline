@@ -1,0 +1,403 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Scalable cells revisited &mdash; PyPipeline  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Performance tests" href="p06_performance_tests.html" />
+    <link rel="prev" title="Validation" href="p04_validation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PyPipeline
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d01_overview/overview.html">PyPipeline</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p01_installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p02_minimal_example.html">Minimal example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p03_pipeline_basics.html">Pipeline basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p04_cell_nesting.html">Cell nesting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p05_scale_up_basics.html">Scale-up basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../d02_getting_started/p06_cell_parameters.html">Cell parameters</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Advanced topics</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="p01_architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p02_topology_determination.html">Topology determination</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p03_pull_based_execution.html">Pull-based execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p04_validation.html">Validation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Scalable cells revisited</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#implementation-design">Implementation design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scaling-strategies">Scaling strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scalable-cells-vs-recurrent-connections">Scalable cells vs recurrent connections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nesting-scalable-cells">Nesting scalable cells</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scaling-up-and-down-at-runtime">Scaling up and down at runtime</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="p06_performance_tests.html">Performance tests</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Deep learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d04_deep_learning/p01_neural_network_training.html">Neural network training</a></li>
+</ul>
+<p class="caption"><span class="caption-text">PyPipeline Serve</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../d05_pypipeline_serve/p01_http_api_generation_basics.html">HTTP API generation basics</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyPipeline</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Scalable cells revisited</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/d03_advanced/p05_scalable_cells_revisited.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="scalable-cells-revisited">
+<h1>Scalable cells revisited<a class="headerlink" href="#scalable-cells-revisited" title="Permalink to this headline">¶</a></h1>
+<p>This page gives some more in-depth information on scalable cells. See the <strong>Getting started &gt; Scale-up basics</strong>
+page for more of an introduction.</p>
+<div class="section" id="implementation-design">
+<h2>Implementation design<a class="headerlink" href="#implementation-design" title="Permalink to this headline">¶</a></h2>
+<p>Scalable cells are a type of composite cells. They are able to scale-up their internal cell to
+separate concurrent threads and processes, increasing the maximal throughput of the whole pipeline.</p>
+<div class="section" id="components">
+<h3>Components<a class="headerlink" href="#components" title="Permalink to this headline">¶</a></h3>
+<p>The following figure shows the components that are involved when building a pipeline with a scalable
+cell.</p>
+<p>When deploying the pipeline in the top part of the image (above the dotted line), the scalable
+cell will generate clones of the internal cell in the background. It’s these clones that will operate
+on the data entering the scalable cell. The internal cell (red) will not see any of the data: in fact,
+it won’t even be deployed to make sure it doesn’t acquire any unnecessary resources.</p>
+<p><strong>The internal cell</strong> however still has a function: it can be used as a proxy for its clones. For example,
+if you change a (runtime) parameter in the internal cell, the corresponding parameter in all clones
+will be synchronized accordingly. This allows you to have control over the cell clones, even when
+they run in different threads, processes, or in the future maybe even nodes.</p>
+<p>Two types of <strong>clone cells</strong> exist: the <code class="docutils literal notranslate"><span class="pre">RayCloneCell</span></code> and <code class="docutils literal notranslate"><span class="pre">ThreadCloneCell</span></code>. On the outside, they
+look exactly the same: they both implement the same interface. Therefore, the scalable cell can treat them
+in exactly the same way. This allows to have both types of clones running in parallel at the same time in
+the same scalable cell.
+On the inside, both <code class="docutils literal notranslate"><span class="pre">CloneCells</span></code> also provide the same interface to their internal cell: the pipeline interface.
+So the purple cell2 clone living inside the <code class="docutils literal notranslate"><span class="pre">CloneCell</span></code> can interact with its parent just as it was a normal
+pipeline.</p>
+<div class="figure align-default" id="id1">
+<img alt="../_images/pypipeline-docs-advanced-architecture-scalable-component.png" src="../_images/pypipeline-docs-advanced-architecture-scalable-component.png" />
+<p class="caption"><span class="caption-text">Diagram showing the relation between a scalable cell, its internal cell and its clones.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+<div class="section" id="execution">
+<h3>Execution<a class="headerlink" href="#execution" title="Permalink to this headline">¶</a></h3>
+<p>This section explains what happens during scalable cell execution.</p>
+<p>For every one of its clones, the scalable cell will start <strong>a managing thread</strong>.</p>
+<dl class="simple">
+<dt>Every thread will repeatedly:</dt><dd><ol class="arabic simple">
+<li><p>wait for a column at the left-hand side of the <strong>output queue</strong> (see following figure) to come free</p></li>
+<li><p>reserve the free column</p></li>
+<li><p>pull the scalable cell inputs (sequentially)</p></li>
+<li><p>forward the inputs to the clone (+ if a skip connection is present: put the input value immediately in the output queue (at the reserved column)</p></li>
+<li><p>perform a <code class="docutils literal notranslate"><span class="pre">clone.pull()</span></code></p></li>
+<li><p>put the outputs of the clone in the output queue (at the reserved column).</p></li>
+</ol>
+</dd>
+</dl>
+<p>All managing threads run concurrently, but only one thread at a time can perform steps 2 and 3. This makes sure
+that the results in the output queue always have the same ordering as their corresponding inputs, even when some
+of the clones operate significantly faster than the others!</p>
+<p>When the scalable cell is pulled, it will wait for the queue column closest to the outputs to become filled
+with results. It will move the result values in this column to the outputs, while shifting all values in the
+queue one column to the right. This frees up a new column on the left-hand side of the queue, which can
+be refilled again by one of the worker threads.</p>
+<div class="figure align-default" id="id2">
+<img alt="../_images/pypipeline-docs-advanced-scalable-cell-description-2.png" src="../_images/pypipeline-docs-advanced-scalable-cell-description-2.png" />
+<p class="caption"><span class="caption-text">Diagram visualizing the scalable cell output queue and clone threads.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<p>Small note: while the shifting queue is a nice explanation to easily understand what happens, it is not
+exactly what happens in reality. In reality, the data in the output queue never gets shifted to the right,
+but a <strong>circular queue</strong> is used where the data remains on the same spot, but the pointers to the begin and
+the end of the queue move instead.</p>
+<p>You can change the size of the result queue by adjusting the preconfigured <code class="docutils literal notranslate"><span class="pre">config_queue_capacity</span></code>
+parameter of the scalable cell. The default queue size is 2. Note that this parameter is a <code class="docutils literal notranslate"><span class="pre">ConfigParameter</span></code>,
+so it needs to be set before deploying.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scalable_cell</span> <span class="o">=</span> <span class="n">SomeScalableCell</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">scalable_cell</span><span class="o">.</span><span class="n">config_queue_capacity</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="scaling-strategies">
+<h2>Scaling strategies<a class="headerlink" href="#scaling-strategies" title="Permalink to this headline">¶</a></h2>
+<p>Scalable cells currently have 2 scaling strategies.</p>
+<p>The first (and default) one is the <strong>CloningStrategy</strong>:
+it allows to clone the internal cell to multiple threads/processes.</p>
+<p>The second one is the <strong>NoScalingStrategy</strong>: this one just executes the internal cell in the main thread,
+just like a normal pipeline. This can be useful when debugging pipelines with scalable cells.</p>
+<p>You can change the scaling strategy of a scalable cell as follows. Note that this must be set before deployment.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pypipeline.cell</span> <span class="kn">import</span> <span class="n">NoScalingStrategy</span><span class="p">,</span> <span class="n">CloningStrategy</span>
+
+<span class="n">scalable_cell</span> <span class="o">=</span> <span class="n">SomeScalableCell</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">scalable_cell</span><span class="o">.</span><span class="n">set_scaling_strategy_type</span><span class="p">(</span><span class="n">CloningStrategy</span><span class="p">)</span>    <span class="c1"># default</span>
+<span class="c1"># or</span>
+<span class="n">scalable_cell</span><span class="o">.</span><span class="n">set_scaling_strategy_type</span><span class="p">(</span><span class="n">NoScalingStrategy</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that, when using the NoScalingStrategy, trying to scale up your scalable cell will raise an error.</p>
+<p>TODO: does it make sense to use a <code class="docutils literal notranslate"><span class="pre">ConfigParameter</span></code> for this?</p>
+<p>TODO: in the future we might want to add a strategy that pulls the inputs of the scalable cell concurrently,
+instead of sequentially.</p>
+</div>
+<div class="section" id="scalable-cells-vs-recurrent-connections">
+<h2>Scalable cells vs recurrent connections<a class="headerlink" href="#scalable-cells-vs-recurrent-connections" title="Permalink to this headline">¶</a></h2>
+<p>Scalable cells and recurrent connections have a special relation. To scale up a scalable cell twice or more, it
+is usually expected that the internal cell is stateless (= the current output only depends on the current input,
+and is fully independent of the previous inputs). This is usually a requirement, as the inputs of the scalable
+cell are divided over all clones. On the other hand, recurrent connections introduce state in the system: the
+output of a pipeline with recurrent connections doesn’t only depend on the input, but also on the previous inputs.
+The recurrent connections keep information of the previous inputs alive in the pipeline.</p>
+<p>Lets take a closer look at the 3 possible combinations.</p>
+<p><strong>1. A recurrent connection over a scalable cell</strong>. It is easy to build such a pipeline: see image below.
+Say that we scale up the scalable cell two times and start to pull it. What would happen?</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>One of the clone manager threads (thread #1) in the scalable cell start pulling the inputs.</p></li>
+<li><p>One of the inputs that is being pulled, pulls at the recurrent connection.</p></li>
+<li><p>The recurrent connection pulls at the output of the scalable cell.</p></li>
+<li><p>The output has, like any proper output with a recurrent connection, an initial value. This value can be
+returned immediately.</p></li>
+<li><p>The clone manager thread #1 forwards the input values to its clone for execution.</p></li>
+<li><p>In the mean time while the clone executes, another clone manager thread #2 starts pulling the inputs.</p></li>
+<li><p>The recurrent connection is pulled again, pulling the output of the scalable cell as well. This time, the
+initial value has already been seen, and the pull is blocked until a new output value arrives in the output
+queue.</p></li>
+<li><p>Thread #1 finished the execution of its clone and makes its results available in the output queue.</p></li>
+<li><p>Only then, thread #2 is unblocked and can start executing its clone.</p></li>
+</ol>
+</div></blockquote>
+<p>As you can see, a recurrent connection <strong>kills all parallelism that can possibly happen in the cells that it
+passes over</strong>. Even if you scale up multiple times, every clone will only be able to run one at a time. So while
+<em>can</em> make recurrent connections over scalable cells, it is not recommended.</p>
+<div class="figure align-default" id="id3">
+<img alt="../_images/pypipeline-docs-advanced-scalable-cell-recurrent-1.png" src="../_images/pypipeline-docs-advanced-scalable-cell-recurrent-1.png" />
+<p class="caption"><span class="caption-text">Example of a pipeline with a recurrent connection over a scalable cell.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+<p><strong>2. A recurrent connection around the internal cell</strong>.</p>
+<p>TODO this should not be allowed, but it doesn’t raise an error yet.</p>
+<div class="figure align-default" id="id4">
+<img alt="../_images/pypipeline-docs-advanced-scalable-cell-recurrent-2.png" src="../_images/pypipeline-docs-advanced-scalable-cell-recurrent-2.png" />
+<p class="caption"><span class="caption-text">Example of a pipeline with a recurrent connection around the internal cell of a scalable cell. This is
+an invalid pipeline.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</div>
+<p><strong>3. A recurrent connection inside the internal cell</strong>. It is possible to build such a scalable cell (see following figure),
+just like it is possible to build a scalable cell with an stateful internal cell. However, note that scaling up
+such a cell more than once, will make sure that not every clone sees all data. Therefore, every recurrent connection
+will roughly see only 1/X-th of the incoming data, where X is the amount of times the cell is scaled up.
+This might have an unwanted impact on your algorithm.</p>
+<p># TODO maybe raise an exception if this happens, but provide a way to suppress the exception if the user knows
+what he/she is doing.</p>
+<div class="figure align-default" id="id5">
+<img alt="../_images/pypipeline-docs-advanced-scalable-cell-recurrent-3.png" src="../_images/pypipeline-docs-advanced-scalable-cell-recurrent-3.png" />
+<p class="caption"><span class="caption-text">Example of a pipeline with a recurrent connection inside the internal cell.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+<div class="section" id="nesting-scalable-cells">
+<h2>Nesting scalable cells<a class="headerlink" href="#nesting-scalable-cells" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to nest scalable cells. The example in the following image would produce 2x2=4 clones of the
+inner “Cell”. However, the inner 2 clones won’t run in parallel, as they only get new input data from the
+outer clone when they provided the result for the previous input data. As a consequence, the throughput is
+exactly the same as without the inner scalable cell being scaled up. Therefore it is not recommended to nest
+scalable cells, as they may needlessly require resources without providing benefit.</p>
+<div class="figure align-default" id="id6">
+<img alt="../_images/pypipeline-docs-advanced-scalable-cell-nested-1.png" src="../_images/pypipeline-docs-advanced-scalable-cell-nested-1.png" />
+<p class="caption"><span class="caption-text">Example of a pipeline with nested scalable cells.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+<div class="section" id="scaling-up-and-down-at-runtime">
+<h2>Scaling up and down at runtime<a class="headerlink" href="#scaling-up-and-down-at-runtime" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to scale up and down scalable cells while they are deployed an running. Note that scaling down
+a running scalable cell may lead to the “loss” of a few data elements of your input stream. This can happen
+when a clone is removed that was still busy processing its input data.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="p06_performance_tests.html" class="btn btn-neutral float-right" title="Performance tests" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="p04_validation.html" class="btn btn-neutral float-left" title="Validation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Johannes Verherstraeten.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
