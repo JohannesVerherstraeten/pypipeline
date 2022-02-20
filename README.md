@@ -48,19 +48,19 @@ provides the results to its outputs when ready. The connections then route these
 
 An example usecase for PyPipeline: multiple object tracking in videos:
 
-![testname1](https://github.com/JohannesVerherstraeten/pypipeline/blob/main/docs/source/data/pypipeline-docs-example-tracking-1.png)
+![testname1](https://github.com/JohannesVerherstraeten/pypipeline/blob/main/docsrc/source/data/pypipeline-docs-example-tracking-1.png)
 
 
 The same usecase, but with ScaleUpCells included to allow the scaling up of bottlenecks: 
 
-![testname2](https://github.com/JohannesVerherstraeten/pypipeline/blob/main/docs/source/data/pypipeline-docs-example-tracking-2.png)
+![testname2](https://github.com/JohannesVerherstraeten/pypipeline/blob/main/docsrc/source/data/pypipeline-docs-example-tracking-2.png)
 
 
 ## Code example of a dummy pipeline
 
 This example shows a simple pipeline that produces two integers, multiplies them, and prints the result to screen:
 
-![testname3](https://github.com/JohannesVerherstraeten/pypipeline/blob/main/docs/source/data/pypipeline-docs-getting-started-pipeline_new.png)
+![testname3](https://github.com/JohannesVerherstraeten/pypipeline/blob/main/docsrc/source/data/pypipeline-docs-getting-started-pipeline_new.png)
 
 For more in-depth explanation about this implementation and many more features, see the documentation. 
 
