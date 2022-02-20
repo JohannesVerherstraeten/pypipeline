@@ -1,8 +1,8 @@
 # PyPipeline
 Encapsulate computations, combine them to algorithms, enable pipeline parallelism and scale up. 
 
-## Installation and documentation
-TODO: add link to the documentation.  
+See the [documentation](https://johannesverherstraeten.github.io/pypipeline/d01_overview/overview.html) for more info 
+and installation details. 
 
 ## About
 **PyPipeline provides a toolbox for building and optimizing the throughput of your data processing pipelines.**
