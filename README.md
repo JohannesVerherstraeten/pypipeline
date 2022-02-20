@@ -25,9 +25,8 @@ PyPipeline is built with an emphasis on good object-oriented software design, wi
 code easy to understand, extend and maintain. Its goal is to serve as a solid foundation to deploy and optimize
 your applications in production.
 
-PyPipeline is licensed under the 
-([GNU Affero General Public License v3](https://www.gnu.org/licenses/agpl-3.0.en.html)). 
-It is actively being developed: currently I (Johannes) have 2 days a week reserved for PyPipeline development. 
+PyPipeline is licensed under the [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0). 
+It is actively being developed, but only as a spare time project. 
 It is in alpha state, meaning that the interfaces are pretty stable but not yet fixed, and bugs may still occur. 
 Please don't hesitate to submit feature requests, file bug reports, ask questions (for now, you can use Github 
 Issues for them all). I'll try to answer ASAP. 
