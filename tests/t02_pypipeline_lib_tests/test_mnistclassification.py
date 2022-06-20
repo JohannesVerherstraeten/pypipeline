@@ -41,7 +41,7 @@ class ResNetClassifierModule(pl.LightningModule):
         super(ResNetClassifierModule, self).__init__()
         self.num_classes = num_classes
         self.num_input_channels = num_input_channels
-        self.save_hyperparameters()     # saves our __init__ arguments for restoring
+        self.save_hyperparameters()     # saves our __init__ arguments for restoring, TODO bugged, see https://github.com/Lightning-AI/lightning/issues/13181
 
         # Configure the model
         self.model = resnet.resnet18(pretrained=False, num_classes=num_classes)
