@@ -34,10 +34,9 @@ All possible installation options are:
    ray:         Ray multiprocessing support
    lib_torch:   PyTorch bindings
    serve:       pypipeline_serve for HTTP API generation -> still under development!
-   tests:       to run the tests
+   tests:       ray + lib_torch + serve + test requirements
    docs:        to build the docs
-   dev:         ray + serve + tests + docs
-   all:         dev + lib_torch
+   all:         tests + docs
 
 
 **Installation from github:**

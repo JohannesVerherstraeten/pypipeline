@@ -165,6 +165,12 @@ coverage html
 firefox ./htmlcov/index.html
 ```
 
+Building the docs:
+```shell
+cd docsrc
+make github
+```
+
 ### Code conventions
 * Interfaces start with `I` (ex: `ICell`, `IInput`, ...), abstract classes start with `A` (ex: `ACell`). 
   A class can inherit from multiple interfaces, but preferably only inherits from one abstract class. 

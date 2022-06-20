@@ -44,8 +44,8 @@ extras = {
     'lib_torch': read_requirements(_PATH_REQUIREMENTS / "lib_torch.txt"),
     'serve': read_requirements(_PATH_REQUIREMENTS / "serve.txt")
 }
-extras['dev'] = extras['docs'] + extras['ray'] + extras['tests'] + extras['serve']
-extras['all'] = extras['dev'] + extras['lib_torch']
+extras["tests"] = extras["tests"] + extras['ray'] + extras['lib_torch'] + extras['serve']
+extras['all'] = extras['tests'] + extras['docs']
 
 setup(
     name="pypipeline",
