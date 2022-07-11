@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import TYPE_CHECKING, Type
+from time import time
 
 from pypipeline.cell.compositecell.scalablecell.strategy.ascalingstrategy import AScalingStrategy
 from pypipeline.exceptions import ScalingNotSupportedException
@@ -60,7 +61,10 @@ class NoScalingStrategy(AScalingStrategy):
         queue_idx = output_queue.acquire_queue_index()
 
         internal_cell = self.get_internal_cell()
+        t0 = time()
         internal_cell.pull()
+        t1 = time()
+        self.get_scalable_cell_deployment().get_scalable_cell()._get_pull_duration_metric().observe(t1 - t0)
         # assumes scalable cells have no other outputs than output_ports:
         for output in self.get_scalable_cell_deployment().get_scalable_cell().get_output_ports():
             output_incoming_connections = output.get_incoming_connections()

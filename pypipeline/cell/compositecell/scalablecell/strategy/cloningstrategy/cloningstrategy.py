@@ -79,6 +79,7 @@ class CloningStrategy(AScalingStrategy):
         is_active_event = Event()
         must_quit_event = Event()
         has_paused_event = Event()
+        pull_duration_metric = self.get_scalable_cell_deployment().get_scalable_cell()._get_pull_duration_metric()
         clone_worker = CloneThread(clone,
                                    self.get_scalable_cell_deployment().get_scalable_cell().get_input_ports(),
                                    self.get_scalable_cell_deployment().get_scalable_cell().get_output_ports(),
@@ -87,6 +88,7 @@ class CloningStrategy(AScalingStrategy):
                                    has_paused_event,
                                    self.__get_queue_reservation_lock(),
                                    self.get_scalable_cell_deployment().get_output_queue(),
+                                   pull_duration_metric,
                                    check_quit_interval,
                                    clone_worker_name)
         self.__worker_id_counter += 1

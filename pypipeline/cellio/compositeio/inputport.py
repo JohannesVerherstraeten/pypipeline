@@ -68,7 +68,7 @@ class InputPort(AInput[T], IConnectionEntryPoint[T], IConnectionExitPoint[T], Ge
             return FalseExplained(f"An InputPort can only be created on an instance of ICompositeCell")
         return TrueExplained()
 
-    def pull(self) -> T:
+    def _on_pull(self) -> T:
         self.logger.debug(f"{self}.pull()")
         if self.get_nb_incoming_connections() == 0:
             raise UnconnectedException(f"CellInput {self} has no incoming connection to pull")

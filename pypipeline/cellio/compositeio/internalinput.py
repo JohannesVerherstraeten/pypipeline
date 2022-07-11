@@ -85,7 +85,7 @@ class InternalInput(AInput[T], IConnectionExitPoint[T], Generic[T]):
     def clear_value(self) -> None:
         self._clear_value()
 
-    def pull(self) -> T:
+    def _on_pull(self) -> T:
         self.logger.debug(f"{self}.pull() @ InternalInput level")
         if not self.value_is_set():
             self._wait_for_value(interruption_frequency=self.PULL_TIMEOUT)

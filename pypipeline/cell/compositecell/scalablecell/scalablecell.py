@@ -427,6 +427,10 @@ class ScalableCell(ACompositeCell):
 
     # ------ Pulling ------
 
+    def _log_pull_duration(self, pull_time_incl_pulling_inputs: float):
+        # Pull duration in a ScalableCell is logged by the scaling strategy
+        pass
+
     def _on_pull(self) -> None:
         deployment = self._get_deployment()
         assert deployment is not None

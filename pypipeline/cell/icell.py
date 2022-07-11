@@ -60,6 +60,13 @@ class ICell(IObservable):
         """
         raise NotImplementedError
 
+    def get_prometheus_name(self) -> str:
+        """
+        Returns:
+            The prometheus metric name of this cell, based on the cell's full name.
+        """
+        raise NotImplementedError
+
     @classmethod
     def can_have_as_name(cls, name: str) -> "BoolExplained":
         """

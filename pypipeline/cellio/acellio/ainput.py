@@ -14,6 +14,7 @@
 
 from typing import TypeVar, Generic, Optional, TYPE_CHECKING, Callable, Sequence, Dict
 from threading import RLock
+from time import time
 
 from pypipeline.cellio.acellio.abstractio import AbstractIO
 from pypipeline.cellio.icellio import IInput
@@ -39,6 +40,7 @@ class AInput(AbstractIO[T], IInput[T], Generic[T]):
         """
         super(AInput, self).__init__(cell, name, validation_fn)
         self.__cell_pull_lock = RLock()
+        self.__total_pull_duration_since_last_read = 0.      # Unit: seconds
 
     def _get_cell_pull_lock(self) -> "RLock":
         # Inputs can be pulled while their cell is being pulled, so they should have a separate lock.
@@ -48,7 +50,19 @@ class AInput(AbstractIO[T], IInput[T], Generic[T]):
     def is_provided(self) -> bool:
         raise NotImplementedError
 
+    def get_total_pull_duration_since_last_read(self) -> float:
+        result = self.__total_pull_duration_since_last_read
+        self.__total_pull_duration_since_last_read = 0.
+        return result
+
     def pull(self) -> T:
+        t0 = time()
+        result = self._on_pull()
+        t1 = time()
+        self.__total_pull_duration_since_last_read += t1 - t0
+        return result
+
+    def _on_pull(self) -> T:
         raise NotImplementedError
 
     def reset(self) -> None:    # TODO threadsafety?
@@ -57,6 +71,7 @@ class AInput(AbstractIO[T], IInput[T], Generic[T]):
             super(AInput, self).reset()
             for incoming_connection in self.get_incoming_connections():
                 incoming_connection.reset()
+            self.__total_pull_duration_since_last_read = 0.
         self.logger.debug(f"{self} reset release @ AInput")
 
     def get_incoming_connections(self) -> "Sequence[IConnection[T]]":

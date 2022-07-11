@@ -55,7 +55,7 @@ class Input(AInput[T], IConnectionEntryPoint[T], Generic[T]):
         self.__entry_point: ConnectionEntryPoint[T] = ConnectionEntryPoint(self, max_incoming_connections=1)
         self._notify_observers_of_creation()
 
-    def pull(self) -> T:
+    def _on_pull(self) -> T:
         if self.get_nb_incoming_connections() == 0:
             raise UnconnectedException(f"CellInput {self} has no incoming connection to pull")
         connection = self.get_incoming_connections()[0]

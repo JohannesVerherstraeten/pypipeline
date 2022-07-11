@@ -43,7 +43,7 @@ class ConfigParameter(AInput[T], Generic[T]):
         super(ConfigParameter, self).__init__(cell, name, validation_fn)
         self._notify_observers_of_creation()
 
-    def pull(self) -> T:
+    def _on_pull(self) -> T:
         return self.get_value()
 
     def set_value(self, value: T) -> None:

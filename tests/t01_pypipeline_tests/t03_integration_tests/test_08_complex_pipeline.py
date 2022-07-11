@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, TYPE_CHECKING, Generator
+from typing import Optional, TYPE_CHECKING, Generator, Dict
 import ray
 import numpy as np
 from math import sin, pi
 import pytest
 from tqdm import tqdm
+from prometheus_client import start_http_server
+import requests
 
 from pypipeline.cell import ASingleCell, ScalableCell, RayCloneCell, ThreadCloneCell, Pipeline
 from pypipeline.cellio import Input, Output, InputPort, OutputPort
@@ -220,7 +222,10 @@ def test_1(ray_init_and_shutdown: None, toplevel_pipeline: ToplevelPipeline) -> 
     toplevel_pipeline.deploy()
     toplevel_pipeline.assert_is_valid()
 
-    for i in tqdm(range(1, NB_ITERATIONS)):
+    PORT = 8808
+    start_http_server(PORT)
+
+    for i in tqdm(range(1, NB_ITERATIONS+1)):
         expected_result: np.ndarray = np.ones((SQUARE_MATRIX_SIZE, )) * sin(i * pi/2)
 
         toplevel_pipeline.pull()
@@ -231,5 +236,37 @@ def test_1(ray_init_and_shutdown: None, toplevel_pipeline: ToplevelPipeline) -> 
 
         assert np.isclose(actual_result.diagonal(), expected_result).all()
 
+        if i % 10 == 0:
+            response = requests.get(f"http://localhost:{PORT}/metrics")
+            assert response.status_code == 200
+
+    response = requests.get(f"http://localhost:{PORT}/metrics")
+    assert response.status_code == 200
+    assert_correct_prometheus_metrics(toplevel_pipeline, response.text, NB_ITERATIONS)
+
     toplevel_pipeline.undeploy()
     toplevel_pipeline.delete()
+
+
+def assert_correct_prometheus_metrics(pipeline: ToplevelPipeline, metrics_text: str, nb_iterations: int):
+    metrics: Dict[str, float] = dict()
+    for line in metrics_text.splitlines():
+        if line.startswith(f"pypipeline_"):
+            metric_name, metric_value = line.split(" ")
+            metrics[metric_name] = float(metric_value)
+    assert metrics[f"pypipeline_{pipeline.get_prometheus_name()}_pull_duration_seconds_count"] == nb_iterations
+    assert_correct_scalable_cell_prometheus_metrics(pipeline.center_1, nb_workers=3, metrics=metrics)
+    assert_correct_scalable_cell_prometheus_metrics(pipeline.center_2, nb_workers=2, metrics=metrics)
+
+
+def assert_correct_scalable_cell_prometheus_metrics(scalable_cell: ScalableCell,
+                                                    nb_workers: int,
+                                                    metrics: Dict[str, float]):
+    prometheus_name = scalable_cell.get_prometheus_name()
+    total_pulls = metrics[f"pypipeline_{prometheus_name}_pull_duration_seconds_count"]
+    sum_worker_pulls = sum([metrics[f"pypipeline_{prometheus_name}_worker{i}_pull_duration_seconds_count"] for i in range(nb_workers)])
+    assert total_pulls == sum_worker_pulls
+
+    total_pull_duration = metrics[f"pypipeline_{prometheus_name}_pull_duration_seconds_sum"]
+    sum_worker_pull_durations = sum([metrics[f"pypipeline_{prometheus_name}_worker{i}_pull_duration_seconds_sum"] for i in range(nb_workers)])
+    assert total_pull_duration >= sum_worker_pull_durations

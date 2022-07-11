@@ -28,3 +28,10 @@ class IInput(IO[T], Generic[T]):
             True if this input is provided by a default value / incoming connection or another way of value provision.
         """
         raise NotImplementedError
+
+    def get_total_pull_duration_since_last_read(self) -> float:
+        """
+        Returns:
+            The total amount of time (in seconds) that this IInput spent on pulling since the last call of this method.
+        """
+        raise NotImplementedError

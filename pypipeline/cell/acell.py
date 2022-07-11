@@ -16,6 +16,8 @@ from typing import Optional, List, Any, TYPE_CHECKING, Dict, Type, Sequence
 from threading import RLock, Condition
 import logging
 from pprint import pformat
+from prometheus_client.core import Histogram
+from time import time
 
 import pypipeline
 from pypipeline.cell.icellobserver import IObservable
@@ -70,6 +72,8 @@ class ACell(ICell):
         self.__pull_as_output_lock = Condition(RLock())
         self.__pull_lock = RLock()
         self.__reset_is_busy: bool = False
+        self.__prometheus_name: Optional[str] = None
+        self.__pull_duration_metric: Optional[Histogram] = None
 
         if parent_cell is not None:
             parent_cell._add_internal_cell(self)        # access to protected method on purpose
@@ -86,6 +90,13 @@ class ACell(ICell):
         parent_cell = self.get_parent_cell()
         prefix = parent_cell.get_full_name() + "." if parent_cell is not None else ""
         return prefix + self.get_name()
+
+    def get_prometheus_name(self) -> str:
+        if not self.is_deployed():
+            raise NotDeployedException(f"{self} is not deployed. The prometheus name of a cell is only available "
+                                       f"after deployment. ")
+        assert self.__prometheus_name is not None
+        return self.__prometheus_name
 
     @classmethod
     def can_have_as_name(cls, name: str) -> BoolExplained:
@@ -365,6 +376,10 @@ class ACell(ICell):
             """
         for io in self.get_all_io():
             io._deploy()        # access to protected member on purpose
+        name = self.get_full_name().replace(".", "_").replace("-", "_")
+        self.__prometheus_name = "".join([char for char in name if char.isalnum() or char == "_"])
+        self.__pull_duration_metric = Histogram(f"pypipeline_{self.__prometheus_name}_pull_duration_seconds",
+                                         f"Duration of the pull calls of cell `{self.get_full_name()}`. ")
 
     def undeploy(self) -> None:
         with self._get_pull_lock():
@@ -391,6 +406,8 @@ class ACell(ICell):
         """
         for io in self.get_all_io():
             io._undeploy()        # access to protected member on purpose
+        self.__prometheus_name = None
+        self.__pull_duration_metric = None
 
     def is_deployed(self) -> bool:
         with self._get_pull_lock():
@@ -406,6 +423,10 @@ class ACell(ICell):
                 io._assert_is_properly_deployed()
 
     # ------ Pulling ------
+
+    def _get_pull_duration_metric(self) -> Histogram:
+        assert not self.is_deployed()
+        return self.__pull_duration_metric
 
     def pull_as_output(self, output: "IOutput") -> None:        # TODO hide in public interface -> make protected?
         self.logger.debug(f"{self}.pull_as_output()")
@@ -463,8 +484,18 @@ class ACell(ICell):
         with self._get_pull_lock():
             if not self.is_deployed():
                 raise NotDeployedException(f"You must deploy first before you can pull: {self}.deploy()")
+            t0 = time()
             self._on_pull()
+            t1 = time()
+            self._log_pull_duration(t1 - t0)
             self.__has_been_pulled_at_least_once = True
+
+    def _log_pull_duration(self, pull_time_incl_pulling_inputs: float):
+        pull_time_inputs_only = sum([input_.get_total_pull_duration_since_last_read() for input_ in self.get_inputs()])
+        assert pull_time_incl_pulling_inputs >= pull_time_inputs_only, \
+            f"{self}: {pull_time_incl_pulling_inputs} >= {pull_time_inputs_only}"
+        pull_time_excl_pulling_inputs = pull_time_incl_pulling_inputs - pull_time_inputs_only
+        self.__pull_duration_metric.observe(pull_time_excl_pulling_inputs)
 
     def _on_pull(self) -> None:
         """

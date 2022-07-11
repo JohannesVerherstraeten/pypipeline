@@ -108,7 +108,7 @@ class RuntimeParameter(Input[T], Generic[T]):
         if self.default_value_is_set() and not self.can_have_as_value(self.get_default_value()):
             raise InvalidStateException(f"{self} has an invalid default value: {self.get_default_value()}")
 
-    def pull(self) -> T:
+    def _on_pull(self) -> T:
         if self.get_nb_incoming_connections() == 0:
             return self.get_default_value()
         result = super(RuntimeParameter, self).pull()
