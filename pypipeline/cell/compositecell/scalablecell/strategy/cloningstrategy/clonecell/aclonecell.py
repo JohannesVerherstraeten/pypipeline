@@ -125,6 +125,15 @@ class ACloneCell(ACompositeCell, ICloneCell):
     def create(cls, original_cell: "ICell", name: str) -> "ACloneCell":
         raise NotImplementedError
 
+    def get_full_name(self) -> str:
+        parent_cell = self.get_original_cell().get_parent_cell()
+        if parent_cell is not None:
+            parent_cell_name = str(parent_cell.get_full_name()).replace(".", "-")
+            prefix = f"{parent_cell_name} - "
+        else:
+            prefix = ""
+        return prefix + self.get_name()
+
     # ------ Original cell ------
 
     def has_as_observable(self, observable: "IObservable") -> bool:
@@ -165,6 +174,19 @@ class ACloneCell(ACompositeCell, ICloneCell):
         return result
 
     # ------ Other methods ------
+
+    def _create_pull_duration_metric(self) -> None:
+        # The pull duration metric of a clone cell is set by the CloningStrategy.
+        pass
+
+    def _delete_pull_duration_metric(self) -> None:
+        # The pull duration metric of a clone cell is deleted by the CloningStrategy.
+        pass
+
+    def _log_pull_duration(self, pull_time_incl_pulling_inputs: float):
+        # The inputs of a clone cell are provided by the clonethread before starting the pull.
+        # Therefore, the time of pulling inputs can be ignored.
+        self._get_pull_duration_metric().observe(pull_time_incl_pulling_inputs)
 
     def _on_pull(self) -> None:
         raise NotImplementedError

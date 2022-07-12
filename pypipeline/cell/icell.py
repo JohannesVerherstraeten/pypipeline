@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import Optional, Any, TYPE_CHECKING, Dict, Sequence
+from prometheus_client import REGISTRY, CollectorRegistry
 
 from pypipeline.cell.icellobserver import IObservable
 
@@ -457,6 +458,19 @@ class ICell(IObservable):
 
         Returns:
             True if this cell supports being scaled up more than once. False otherwise.
+        """
+        raise NotImplementedError
+
+    def get_prometheus_metric_registry(self) -> CollectorRegistry:
+        """
+        Returns:
+            The prometheus client metrics registry to which this cell's metrics are associated.
+        """
+
+    def _get_prometheus_metric_registry_unsafe(self) -> CollectorRegistry:
+        """
+        Returns:
+            The prometheus client metrics registry to which this cell's metrics are associated.
         """
         raise NotImplementedError
 

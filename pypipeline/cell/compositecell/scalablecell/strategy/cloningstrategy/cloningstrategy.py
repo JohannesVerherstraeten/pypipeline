@@ -1,5 +1,6 @@
 from typing import Optional, Dict, Sequence, TYPE_CHECKING, Type
 from threading import Thread, Event, Lock
+from prometheus_client import Histogram
 
 from pypipeline.cell.compositecell.scalablecell.strategy.ascalingstrategy import AScalingStrategy
 from pypipeline.cell.compositecell.scalablecell.strategy.cloningstrategy.clonecell import ICloneCell
@@ -63,9 +64,7 @@ class CloningStrategy(AScalingStrategy):
 
     def add_clone(self, method: Type[ICloneCell]) -> None:      # TODO create_clone would be a better name?
         internal_cell = self.get_internal_cell()
-        scalable_cell_name = self.get_scalable_cell_deployment().get_scalable_cell().get_full_name()
-        scalable_cell_name = str(scalable_cell_name).replace(".", "-")
-        clone_name = f"{scalable_cell_name} - worker{self.__worker_id_counter}"
+        clone_name = f"{method.__name__}_{self.__worker_id_counter}"
         clone = method.create(internal_cell, clone_name)    # TODO may raise exceptions
         self.logger.info(f"{self} created clone: {clone}")
         self.__add_clone(clone)
@@ -79,7 +78,6 @@ class CloningStrategy(AScalingStrategy):
         is_active_event = Event()
         must_quit_event = Event()
         has_paused_event = Event()
-        pull_duration_metric = self.get_scalable_cell_deployment().get_scalable_cell()._get_pull_duration_metric()
         clone_worker = CloneThread(clone,
                                    self.get_scalable_cell_deployment().get_scalable_cell().get_input_ports(),
                                    self.get_scalable_cell_deployment().get_scalable_cell().get_output_ports(),
@@ -88,7 +86,6 @@ class CloningStrategy(AScalingStrategy):
                                    has_paused_event,
                                    self.__get_queue_reservation_lock(),
                                    self.get_scalable_cell_deployment().get_output_queue(),
-                                   pull_duration_metric,
                                    check_quit_interval,
                                    clone_worker_name)
         self.__worker_id_counter += 1
@@ -96,6 +93,8 @@ class CloningStrategy(AScalingStrategy):
         self.__clones_are_active[clone] = is_active_event
         self.__clones_must_quit[clone] = must_quit_event
         self.__clones_have_paused[clone] = has_paused_event
+        pull_duration_metric = self.get_scalable_cell_deployment().get_scalable_cell()._get_pull_duration_metric()
+        clone._set_pull_duration_metric(pull_duration_metric.labels(clone=clone.get_name()))
         clone.deploy()      # TODO may raise exceptions
         clone_worker.start()
         if self.__has_started:
@@ -122,6 +121,7 @@ class CloningStrategy(AScalingStrategy):
         self.__clones[clone].join()
         self.logger.info(f"Clone worker thread joined")
         clone.undeploy()    # TODO may raise exceptions
+        clone._set_pull_duration_metric(None)
         self.logger.info(f"Clone got undeployed")
         del self.__clones_are_active[clone]
         del self.__clones_must_quit[clone]

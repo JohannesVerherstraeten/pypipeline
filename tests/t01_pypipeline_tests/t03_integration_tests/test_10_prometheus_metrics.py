@@ -92,8 +92,8 @@ def test_prometheus_metrics(toplevel_pipeline: ToplevelPipeline) -> None:
     p.assert_is_valid()
     p.deploy()
 
-    PORT = 8808
-    start_http_server(PORT)
+    PORT = 8809
+    start_http_server(PORT, registry=p.get_prometheus_metric_registry())
 
     for i in range(5):
         p.pull()

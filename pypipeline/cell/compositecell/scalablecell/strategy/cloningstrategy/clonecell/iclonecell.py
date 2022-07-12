@@ -17,6 +17,8 @@ from typing import Sequence, TYPE_CHECKING, Optional
 from pypipeline.cell.compositecell.icompositecell import ICompositeCell
 
 if TYPE_CHECKING:
+    from prometheus_client import Histogram
+
     from pypipeline.validation import BoolExplained
     from pypipeline.cell.icell import ICell
     from pypipeline.cellio import InternalInput, InternalOutput
@@ -107,4 +109,10 @@ class ICloneCell(ICompositeCell):
         Raises:
              KeyError: if this cell has no clone output with the given name.
         """
+        raise NotImplementedError
+
+    def _get_pull_duration_metric(self) -> Optional["Histogram"]:
+        raise NotImplementedError
+
+    def _set_pull_duration_metric(self, metric: Optional["Histogram"]) -> None:
         raise NotImplementedError

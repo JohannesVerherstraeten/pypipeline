@@ -63,7 +63,7 @@ def test_cloning_cell_without_io(ray_init_and_shutdown: None) -> None:
     a = AScalableCell(None, "a")
     a.config_queue_capacity.set_value(8)
     a.assert_is_valid()
-    a.deploy()     # May be put before or after (or in between) the creations of the clone clones
+    a.deploy()  # May be put before or after (or in between) the creations of the clone clones
     # a.scale_up(3, method=ThreadCloneCell)
     a.scale_up(3, method=RayCloneCell)
     a.assert_is_valid()

@@ -111,7 +111,7 @@ class RuntimeParameter(Input[T], Generic[T]):
     def _on_pull(self) -> T:
         if self.get_nb_incoming_connections() == 0:
             return self.get_default_value()
-        result = super(RuntimeParameter, self).pull()
+        result = super(RuntimeParameter, self)._on_pull()
         if result is None:
             return self.get_default_value()
         return result

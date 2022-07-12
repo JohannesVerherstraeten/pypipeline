@@ -18,7 +18,7 @@ import numpy as np
 from math import sin, pi
 import pytest
 from tqdm import tqdm
-from prometheus_client import start_http_server
+from prometheus_client import start_http_server, CollectorRegistry
 import requests
 
 from pypipeline.cell import ASingleCell, ScalableCell, RayCloneCell, ThreadCloneCell, Pipeline
@@ -223,7 +223,7 @@ def test_1(ray_init_and_shutdown: None, toplevel_pipeline: ToplevelPipeline) -> 
     toplevel_pipeline.assert_is_valid()
 
     PORT = 8808
-    start_http_server(PORT)
+    start_http_server(PORT, registry=toplevel_pipeline.get_prometheus_metric_registry())
 
     for i in tqdm(range(1, NB_ITERATIONS+1)):
         expected_result: np.ndarray = np.ones((SQUARE_MATRIX_SIZE, )) * sin(i * pi/2)
@@ -242,6 +242,9 @@ def test_1(ray_init_and_shutdown: None, toplevel_pipeline: ToplevelPipeline) -> 
 
     response = requests.get(f"http://localhost:{PORT}/metrics")
     assert response.status_code == 200
+
+    print(response.text)
+
     assert_correct_prometheus_metrics(toplevel_pipeline, response.text, NB_ITERATIONS)
 
     toplevel_pipeline.undeploy()
@@ -255,18 +258,16 @@ def assert_correct_prometheus_metrics(pipeline: ToplevelPipeline, metrics_text: 
             metric_name, metric_value = line.split(" ")
             metrics[metric_name] = float(metric_value)
     assert metrics[f"pypipeline_{pipeline.get_prometheus_name()}_pull_duration_seconds_count"] == nb_iterations
-    assert_correct_scalable_cell_prometheus_metrics(pipeline.center_1, nb_workers=3, metrics=metrics)
-    assert_correct_scalable_cell_prometheus_metrics(pipeline.center_2, nb_workers=2, metrics=metrics)
+    assert_correct_scalable_cell_prometheus_metrics(pipeline.center_1, metrics=metrics, nb_iterations=nb_iterations)
+    assert_correct_scalable_cell_prometheus_metrics(pipeline.center_2, metrics=metrics, nb_iterations=nb_iterations)
 
 
 def assert_correct_scalable_cell_prometheus_metrics(scalable_cell: ScalableCell,
-                                                    nb_workers: int,
-                                                    metrics: Dict[str, float]):
+                                                    metrics: Dict[str, float],
+                                                    nb_iterations: int):
     prometheus_name = scalable_cell.get_prometheus_name()
-    total_pulls = metrics[f"pypipeline_{prometheus_name}_pull_duration_seconds_count"]
-    sum_worker_pulls = sum([metrics[f"pypipeline_{prometheus_name}_worker{i}_pull_duration_seconds_count"] for i in range(nb_workers)])
-    assert total_pulls == sum_worker_pulls
-
-    total_pull_duration = metrics[f"pypipeline_{prometheus_name}_pull_duration_seconds_sum"]
-    sum_worker_pull_durations = sum([metrics[f"pypipeline_{prometheus_name}_worker{i}_pull_duration_seconds_sum"] for i in range(nb_workers)])
-    assert total_pull_duration >= sum_worker_pull_durations
+    total_pulls = 0
+    for metric_name, metric_value in metrics.items():
+        if metric_name.startswith(f"pypipeline_{prometheus_name}_pull_duration_seconds_count"):
+            total_pulls += metric_value
+    assert total_pulls >= nb_iterations

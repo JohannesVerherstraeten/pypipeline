@@ -62,6 +62,7 @@ ScalableCell A:
          - Y4
 """
 from typing import Optional, Dict, List, TYPE_CHECKING, Any, Sequence, Type
+from prometheus_client import Histogram
 
 from pypipeline.cell.icellobserver import ScalingStrategyUpdateEvent, CloneTypeUpdateEvent
 from pypipeline.cell.compositecell.acompositecell import ACompositeCell
@@ -427,7 +428,15 @@ class ScalableCell(ACompositeCell):
 
     # ------ Pulling ------
 
-    def _log_pull_duration(self, pull_time_incl_pulling_inputs: float):
+    def _create_pull_duration_metric(self) -> None:
+        assert self._get_pull_duration_metric() is None
+        metric = Histogram(f"pypipeline_{self.get_prometheus_name()}_pull_duration_seconds",
+                           f"Duration of the pull calls of cell `{self.get_full_name()}`. ",
+                           labelnames=["clone"],
+                           registry=self._get_prometheus_metric_registry_unsafe())
+        self._set_pull_duration_metric(metric)
+
+    def _log_pull_duration(self, pull_time: float):
         # Pull duration in a ScalableCell is logged by the scaling strategy
         pass
 

@@ -16,7 +16,7 @@ from typing import Optional, List, Any, TYPE_CHECKING, Dict, Type, Sequence
 from threading import RLock, Condition
 import logging
 from pprint import pformat
-from prometheus_client.core import Histogram
+from prometheus_client import Histogram, CollectorRegistry
 from time import time
 
 import pypipeline
@@ -72,7 +72,7 @@ class ACell(ICell):
         self.__pull_as_output_lock = Condition(RLock())
         self.__pull_lock = RLock()
         self.__reset_is_busy: bool = False
-        self.__prometheus_name: Optional[str] = None
+        self.__prometheus_metric_registry: Optional[CollectorRegistry] = None
         self.__pull_duration_metric: Optional[Histogram] = None
 
         if parent_cell is not None:
@@ -92,11 +92,9 @@ class ACell(ICell):
         return prefix + self.get_name()
 
     def get_prometheus_name(self) -> str:
-        if not self.is_deployed():
-            raise NotDeployedException(f"{self} is not deployed. The prometheus name of a cell is only available "
-                                       f"after deployment. ")
-        assert self.__prometheus_name is not None
-        return self.__prometheus_name
+        name = self.get_full_name().replace(".", "_").replace("-", "_")
+        prometheus_name = "".join([char for char in name if char.isalnum() or char == "_"])
+        return prometheus_name
 
     @classmethod
     def can_have_as_name(cls, name: str) -> BoolExplained:
@@ -334,6 +332,45 @@ class ACell(ICell):
     def supports_scaling(self) -> bool:
         raise NotImplementedError
 
+    # ------ Prometheus metrics ------
+
+    def get_prometheus_metric_registry(self) -> CollectorRegistry:
+        if not self.is_deployed():
+            raise NotDeployedException(f"{self} must be deployed to have a Prometheus metric registry.")
+        return self._get_prometheus_metric_registry_unsafe()
+
+    def _get_prometheus_metric_registry_unsafe(self) -> CollectorRegistry:
+        assert self.__prometheus_metric_registry is not None
+        return self.__prometheus_metric_registry
+
+    def _get_pull_duration_metric(self) -> Optional[Histogram]:
+        return self.__pull_duration_metric
+
+    def _set_pull_duration_metric(self, metric: Optional[Histogram]) -> None:
+        # Use with care, some code should be responsible from removing the metric from the registry as well.
+        self.__pull_duration_metric = metric
+
+    def _create_pull_duration_metric(self) -> None:
+        assert self._get_pull_duration_metric() is None
+        metric = Histogram(f"pypipeline_{self.get_prometheus_name()}_pull_duration_seconds",
+                           f"Duration of the pull calls of cell `{self.get_full_name()}`. ",
+                           registry=self._get_prometheus_metric_registry_unsafe())
+        self._set_pull_duration_metric(metric)
+
+    def _delete_pull_duration_metric(self) -> None:
+        pull_duration_metric = self._get_pull_duration_metric()
+        assert pull_duration_metric is not None
+        self._get_prometheus_metric_registry_unsafe().unregister(pull_duration_metric)
+        self._set_pull_duration_metric(None)
+
+    def _log_pull_duration(self, pull_time_incl_pulling_inputs: float):
+        assert self.__pull_duration_metric is not None, f"{self} doesn't have a pull duration metric"
+        pull_time_inputs_only = sum([input_.get_total_pull_duration_since_last_read() for input_ in self.get_inputs()])
+        assert pull_time_incl_pulling_inputs >= pull_time_inputs_only, \
+            f"{self}: {pull_time_incl_pulling_inputs} >= {pull_time_inputs_only}"
+        pull_time_excl_pulling_inputs = pull_time_incl_pulling_inputs - pull_time_inputs_only
+        self.__pull_duration_metric.observe(pull_time_excl_pulling_inputs)
+
     # ------ Deployment ------
 
     def inputs_are_provided(self) -> "BoolExplained":
@@ -376,10 +413,14 @@ class ACell(ICell):
             """
         for io in self.get_all_io():
             io._deploy()        # access to protected member on purpose
-        name = self.get_full_name().replace(".", "_").replace("-", "_")
-        self.__prometheus_name = "".join([char for char in name if char.isalnum() or char == "_"])
-        self.__pull_duration_metric = Histogram(f"pypipeline_{self.__prometheus_name}_pull_duration_seconds",
-                                         f"Duration of the pull calls of cell `{self.get_full_name()}`. ")
+        if self.__prometheus_metric_registry is not None:
+            registry = self.__prometheus_metric_registry
+        elif self.get_parent_cell() is not None:
+            registry = self.get_parent_cell()._get_prometheus_metric_registry_unsafe()
+        else:
+            registry = CollectorRegistry()
+        self.__prometheus_metric_registry = registry
+        self._create_pull_duration_metric()
 
     def undeploy(self) -> None:
         with self._get_pull_lock():
@@ -406,8 +447,7 @@ class ACell(ICell):
         """
         for io in self.get_all_io():
             io._undeploy()        # access to protected member on purpose
-        self.__prometheus_name = None
-        self.__pull_duration_metric = None
+        self._delete_pull_duration_metric()
 
     def is_deployed(self) -> bool:
         with self._get_pull_lock():
@@ -423,10 +463,6 @@ class ACell(ICell):
                 io._assert_is_properly_deployed()
 
     # ------ Pulling ------
-
-    def _get_pull_duration_metric(self) -> Histogram:
-        assert not self.is_deployed()
-        return self.__pull_duration_metric
 
     def pull_as_output(self, output: "IOutput") -> None:        # TODO hide in public interface -> make protected?
         self.logger.debug(f"{self}.pull_as_output()")
@@ -489,13 +525,6 @@ class ACell(ICell):
             t1 = time()
             self._log_pull_duration(t1 - t0)
             self.__has_been_pulled_at_least_once = True
-
-    def _log_pull_duration(self, pull_time_incl_pulling_inputs: float):
-        pull_time_inputs_only = sum([input_.get_total_pull_duration_since_last_read() for input_ in self.get_inputs()])
-        assert pull_time_incl_pulling_inputs >= pull_time_inputs_only, \
-            f"{self}: {pull_time_incl_pulling_inputs} >= {pull_time_inputs_only}"
-        pull_time_excl_pulling_inputs = pull_time_incl_pulling_inputs - pull_time_inputs_only
-        self.__pull_duration_metric.observe(pull_time_excl_pulling_inputs)
 
     def _on_pull(self) -> None:
         """

@@ -14,6 +14,7 @@
 
 import pytest
 from typing import Optional, List
+from prometheus_client import CollectorRegistry
 
 from pypipeline.connection import Connection
 from pypipeline.cell import ASingleCell, ICompositeCell, Pipeline, ScalableCell, ICell
@@ -153,6 +154,7 @@ def test_cell_add_input_when_deployed(dummycell1: DummyCell1) -> None:
     dummycell1.deploy()
     with pytest.raises(AlreadyDeployedException):
         Input(dummycell1, "input_name")
+    dummycell1.undeploy()
 
 
 def test_cell_add_input_input_name_already_exists(all_cells: List[ICell]) -> None:
@@ -184,6 +186,7 @@ def test_cell_add_output_when_deployed(dummycell1: DummyCell1) -> None:
     dummycell1.deploy()
     with pytest.raises(AlreadyDeployedException):
         Output(dummycell1, "output_name")
+    dummycell1.undeploy()
 
 
 def test_cell_add_output_output_name_already_exists(all_cells: List[ICell]) -> None:

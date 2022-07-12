@@ -2,8 +2,6 @@ from typing import Optional, TYPE_CHECKING, Any, Collection, Iterator
 from threading import Thread, Lock, Event
 from contextlib import contextmanager
 import logging
-from time import time
-from prometheus_client import Histogram
 
 import pypipeline
 from pypipeline.cell.compositecell.scalablecell.strategy.cloningstrategy.clonecell import ICloneCell
@@ -32,7 +30,6 @@ class CloneThread(Thread):
                  has_paused: Event,
                  queue_reservation_lock: Lock,
                  output_queue: "CircularMultiQueue[OutputPort, Any]",
-                 pull_duration_metric: Histogram,
                  check_quit_interval: float = 5.,
                  thread_name: Optional[str] = None):
         super(CloneThread, self).__init__(name=thread_name)
@@ -48,7 +45,6 @@ class CloneThread(Thread):
         self.check_quit_interval = check_quit_interval
         self.got_stopiteration = False
         self.exception: Optional[Exception] = None
-        self.pull_duration_metric = pull_duration_metric
 
     def run(self) -> None:
         """
@@ -83,10 +79,7 @@ class CloneThread(Thread):
 
             # If we didn't become inactive because of one source cells got exhausted, execute the clone.
             if self.is_active.is_set():
-                t0 = time()
                 self._pull_clone()
-                t1 = time()
-                self.pull_duration_metric.observe(t1 - t0)
                 self.logger.debug(f"flag7")
             else:
                 self.logger.debug(f"flag7.1")

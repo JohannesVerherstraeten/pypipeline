@@ -18,6 +18,7 @@ import time
 import random
 import ray
 import pytest
+from prometheus_client import CollectorRegistry
 
 from pypipeline.cell import ASingleCell, ScalableCell, Pipeline, RayCloneCell, ThreadCloneCell
 from pypipeline.cellio import Input, Output, OutputPort, InputPort
@@ -96,6 +97,8 @@ def test_without_upscaling() -> None:
 
     # No regulators, drivers or inference_processes needed, just pull the output you want.
     toplevel_pipeline.assert_is_valid()
+    # Providing a metric registry is needed during testing, otherwise the default registry is shared between all tests
+    # which might give problems when cells with the same name already exist.
     toplevel_pipeline.deploy()
     expected_outputs = [i/10. + i for i in range(1, 6)]
     for expected_output in expected_outputs:
