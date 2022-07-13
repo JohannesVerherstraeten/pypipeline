@@ -133,7 +133,7 @@ def test_1(scaleup_method: Type[ICloneCell]):
         # 'input_port_2': (None, "99".encode())
     }
     response = client.post("/pull", files=files)
-    assert response.status_code == 200
+    assert response.status_code == 200, response.json()
 
     # Pull
     files = {
@@ -141,7 +141,7 @@ def test_1(scaleup_method: Type[ICloneCell]):
         'input_port_2': (None, "99".encode())
     }
     response = client.post("/pull", files=files)
-    assert response.status_code == 200
+    assert response.status_code == 200, response.json()
 
     # Pull
     files = {
@@ -149,4 +149,4 @@ def test_1(scaleup_method: Type[ICloneCell]):
         # 'input_port_2': (None, "99".encode())
     }
     response = client.post("/pull", files=files)
-    assert response.status_code == 200
+    assert response.status_code == 200, response.json()

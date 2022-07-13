@@ -85,6 +85,10 @@ class InternalInput(AInput[T], IConnectionExitPoint[T], Generic[T]):
     def clear_value(self) -> None:
         self._clear_value()
 
+    def get_total_pull_duration_since_last_read(self) -> float:
+        # Internal inputs don't pull any input value
+        return 0.
+
     def _on_pull(self) -> T:
         self.logger.debug(f"{self}.pull() @ InternalInput level")
         if not self.value_is_set():

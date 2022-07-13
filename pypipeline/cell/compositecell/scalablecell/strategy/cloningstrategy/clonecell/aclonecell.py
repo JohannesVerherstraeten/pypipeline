@@ -183,11 +183,6 @@ class ACloneCell(ACompositeCell, ICloneCell):
         # The pull duration metric of a clone cell is deleted by the CloningStrategy.
         pass
 
-    def _log_pull_duration(self, pull_time_incl_pulling_inputs: float):
-        # The inputs of a clone cell are provided by the clonethread before starting the pull.
-        # Therefore, the time of pulling inputs can be ignored.
-        self._get_pull_duration_metric().observe(pull_time_incl_pulling_inputs)
-
     def _on_pull(self) -> None:
         raise NotImplementedError
 
