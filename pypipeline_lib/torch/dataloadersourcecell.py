@@ -17,6 +17,7 @@ from torch.utils.data.dataloader import DataLoader
 
 from pypipeline.cell import ASingleCell, ICompositeCell
 from pypipeline.cellio import Output, ConfigParameter
+from pypipeline.exceptions import NotDeployedException
 
 
 T = TypeVar("T")
@@ -37,6 +38,11 @@ class ADataLoaderSourceCell(ASingleCell, Generic[T]):
         self.__dataloader: Optional["DataLoader[T]"] = None
         self.__dataloaderiter: Optional[Iterator[T]] = None
 
+        self._remove_batch_dim: Optional[bool] = None
+
+        self.config_remove_batch_dimension: ConfigParameter[bool] = ConfigParameter(self, "remove_batch_dim")
+        self.config_remove_batch_dimension.set_value(False)     # Provide a default value
+
         self.config_dataloader: ConfigParameter[DataLoader[T]] = ConfigParameter(self, "dataloader")
 
     def _get_dataloader(self) -> Optional["DataLoader[T]"]:
@@ -54,10 +60,15 @@ class ADataLoaderSourceCell(ASingleCell, Generic[T]):
         super(ADataLoaderSourceCell, self)._on_deploy()
         dataloader: DataLoader[T] = self.config_dataloader.get_value()
         self._set_dataloader(dataloader)
+        self._remove_batch_dim = self.config_remove_batch_dimension.get_value()
+        if self._remove_batch_dim and dataloader.batch_size != 1:
+            raise ValueError(
+                f"f{self} can only remove the batch dimension if the dataloader loads batches of size 1.")
 
     def _on_undeploy(self) -> None:
         super(ADataLoaderSourceCell, self)._on_undeploy()
         self._set_dataloader(None)
+        self._remove_batch_dim = None
 
     def _set_outputs(self, items: T) -> None:
         """
@@ -75,6 +86,7 @@ class ADataLoaderSourceCell(ASingleCell, Generic[T]):
         """
         dataloader = self._get_dataloader()
         assert dataloader is not None
+        assert self._remove_batch_dim is not None
 
         # TODO use self.deploy() for this?
         if self.__dataloaderiter is None:
@@ -84,6 +96,8 @@ class ADataLoaderSourceCell(ASingleCell, Generic[T]):
         self._set_outputs(items)
 
     def get_nb_available_pulls(self) -> Optional[int]:
+        if not self.is_deployed():
+            raise NotDeployedException(f"{self}: first deploy this cell to know its nb of available pulls.")
         dataloader = self._get_dataloader()
         if dataloader is None:
             raise Exception(f"{self}: no dataloader available. "
@@ -95,47 +109,58 @@ class DataLoaderSourceCell(ADataLoaderSourceCell[Tuple[SampleT, LabelT]], Generi
     """
     Source cell for pytorch DataLoaders loading sample-label pairs.
 
-    This cell inherits the configuration parameter:
+    This cell inherits the configuration parameters:
 
     self.config_dataloader: ConfigParameter[DataLoader[Tuple[SampleT, LabelT]]] = ConfigParameter(self, "dataloader")
+    self.config_remove_batch_dimension: ConfigParameter[bool] = ConfigParameter(self, "remove_batch_dim") -> optional
 
-    -> don't forget to set it before deploying.
+    -> don't forget to set them before deploying.
     """
 
     def __init__(self,
                  parent_cell: "Optional[ICompositeCell]",
-                 name: str):     # If True, the batch size of the dataloader must be 1
+                 name: str):
         super(DataLoaderSourceCell, self).__init__(parent_cell, name)
-
-        self.__remove_batch_dim: Optional[bool] = None
 
         self.output_sample: Output[SampleT] = Output(self, "sample")
         self.output_label: Output[LabelT] = Output(self, "label")
-
-        self.config_remove_batch_dimension: ConfigParameter[bool] = ConfigParameter(self, "remove_batch_dim")
-        self.config_remove_batch_dimension.set_value(False)     # Provide a default value
-
-    def _on_deploy(self) -> None:
-        super(DataLoaderSourceCell, self)._on_deploy()
-        self.__remove_batch_dim = self.config_remove_batch_dimension.get_value()
-        if self.__remove_batch_dim and self._get_dataloader().batch_size != 1:
-            raise ValueError(f"f{self} can only remove the batch dimension if the dataloader loads batches of size 1.")
-
-    def _on_undeploy(self) -> None:
-        super(ADataLoaderSourceCell, self)._on_undeploy()
-        self.__remove_batch_dim = None
 
     def _set_outputs(self, items: Tuple[SampleT, LabelT]) -> None:
         if not isinstance(items, (tuple, list)) or len(items) != 2:
             raise ValueError(f"Expected the dataloader configured at {self}.config_dataloader to provide 2 items: "
                              f"a sample and a label. \nGot: {items}")
-        assert self.__remove_batch_dim is not None
         sample, label = items
-        if self.__remove_batch_dim:
+        if self._remove_batch_dim:
             sample = sample[0]
             label = label[0]
         self.output_sample.set_value(sample)
         self.output_label.set_value(label)
+
+
+class UnlabeledDataLoaderSourceCell(ADataLoaderSourceCell[SampleT], Generic[SampleT]):
+    """
+    Source cell for pytorch DataLoaders loading (unlabeled) samples.
+
+    This cell inherits the configuration parameters:
+
+    self.config_dataloader: ConfigParameter[DataLoader[SampleT]] = ConfigParameter(self, "dataloader")
+    self.config_remove_batch_dimension: ConfigParameter[bool] = ConfigParameter(self, "remove_batch_dim") -> optional
+
+    -> don't forget to set them before deploying.
+    """
+
+    def __init__(self,
+                 parent_cell: "Optional[ICompositeCell]",
+                 name: str):
+        super(UnlabeledDataLoaderSourceCell, self).__init__(parent_cell, name)
+
+        self.output_sample: Output[SampleT] = Output(self, "sample")
+
+    def _set_outputs(self, items: SampleT) -> None:
+        sample = items
+        if self._remove_batch_dim:
+            sample = sample[0]
+        self.output_sample.set_value(sample)
 
 
 if __name__ == '__main__':

@@ -13,4 +13,5 @@
 # limitations under the License.
 
 from pypipeline_lib.torch.data import CellInputDataset, CellInputDataLoader
-from pypipeline_lib.torch.dataloadersourcecell import ADataLoaderSourceCell, DataLoaderSourceCell
+from pypipeline_lib.torch.dataloadersourcecell import ADataLoaderSourceCell, DataLoaderSourceCell, \
+    UnlabeledDataLoaderSourceCell
