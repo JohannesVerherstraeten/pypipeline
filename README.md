@@ -194,6 +194,7 @@ For memory usage testing:
 
 
 ### Open tickets (TODO create issues)
+- [ ] Allow creating connections between IO with the `>>` operator for better readability, ex: `cell1.output >> cell.2.input`
 - [ ] Installing ray should be optional: implemented, but should still be tested
 - [ ] What happens to a FastAPIServer call if somewhere in the pipeline an exception is raised? And what with a headless inference deployment on a production line? And what with a pipeline in development? -> Recover or not?
 - [ ] What happens if that exception occurs inside one of the multiple clones of a ScalableCell? -> Recover or not? Implementation with Critical and NonCritical exceptions is ready, but should still be documented.
