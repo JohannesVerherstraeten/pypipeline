@@ -55,7 +55,7 @@ setup(
     description="Encapsulate computations, combine them to algorithms, enable pipeline parallelism and scale up. ",
     keywords="pipeline pipelining parallelism parallelization scaling ray threading algorithm throughput building "
              "blocks",
-    python_requires='>=3.7,<3.9',
+    python_requires='>=3.7',
     setup_requires=[],
     install_requires=[],
     extras_require=extras,
